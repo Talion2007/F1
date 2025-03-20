@@ -24,6 +24,11 @@ function NavBar() {
                         <h3>Pratices</h3>
                     </Link>
                 </li>
+                <li>
+                    <Link to="/qualifying">
+                        <h3>Qualifying</h3>
+                    </Link>
+                </li>
             </ul>
         </nav>
     )

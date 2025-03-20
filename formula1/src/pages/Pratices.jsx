@@ -10,7 +10,10 @@ function Pratices() {
     })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [year, setYear] = useState("2025")
+    const [year, setYear] = useState(() => {
+        const saveYear = localStorage.getItem('Year Key');
+        return saveYear ? JSON.parse(saveYear) : [];
+    })
 
     useEffect(() => {
         async function fetchUsers() {
@@ -38,6 +41,9 @@ function Pratices() {
     const praticeTwo = users.filter((user) => user.session_name === 'Practice 2');
     const praticeTri = users.filter((user) => user.session_name === 'Practice 3');
 
+    useEffect(() => {
+        localStorage.setItem('Year Key', JSON.stringify(year));
+    }, [year])
 
     return (
         <>
@@ -48,7 +54,7 @@ function Pratices() {
 <div className="container">
                 <h1 className="title">Pratices 1 - F1 {year}</h1>
 
-                                    <select onChange={(e) => setYear(e.target.value)}>
+                                    <select value={year} onChange={(e) => setYear(e.target.value)}>
                             <option>2025</option>
                             <option>2024</option>
                             <option>2023</option>
