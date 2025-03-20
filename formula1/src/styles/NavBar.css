@@ -1,5 +1,49 @@
+#hamburger-trigger {
+    display: none;
+  }
+  
+  #options {
+    display: none;
+  }
+  
+  #hamburger-trigger:checked ~ #options {
+    display: flex;
+    flex-direction: column;
+    
+  }
+  
+  #options {
+    list-style-type: none;
+    margin: 0;
+  }
+  
+  #off {
+    color: red;
+  }
+  
+  svg {
+    width: 3rem;
+  }
+  
+  #hamburger-trigger:checked ~ label svg#on {
+    display: none;
+  }
+  
+  #hamburger-trigger:checked ~ label svg#off {
+    display: inline;
+  }
+  
+  #hamburger-trigger ~ label  svg#off {
+    display: none;
+  }
+  
+  #hamburger-trigger ~ label svg#on {
+    display: inline;
+  }
+
 nav {
     width: 70%;
+    color: #ff1e00ff;
 
     ul {
         display: flex;

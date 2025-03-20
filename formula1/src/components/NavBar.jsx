@@ -1,9 +1,22 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import "../styles/NavBar.css"
 function NavBar() {
+    const [navbar, setNavbar] = useState(false);
     return (
         <nav>
-            <ul>
+       <input type='checkbox' id="hamburger-trigger"/>
+<label for="hamburger-trigger">
+        <svg id="on" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+
+        <svg id="off" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+
+</label>
+            <ul id="options">
                 <li>
                     <Link to="/">
                         <h3>Home</h3>
