@@ -1,0 +1,13 @@
+.Cards{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.Passagens {
+    padding-top: 1em;
+}
+
+*{
+    text-align: center;
+}
