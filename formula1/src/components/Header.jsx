@@ -6,6 +6,7 @@ function Header() {
     return (
         <>
         <header>
+        <title>Formula 1</title>
         <Link to="/">
         <img src={Logo}></img>
         </Link>

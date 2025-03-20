@@ -6,22 +6,22 @@ function NavBar() {
             <ul>
                 <li>
                     <Link to="/">
-                        <h2>Home</h2>
+                        <h3>Home</h3>
                     </Link>
                 </li>
                 <li>
                     <Link to="/drivers">
-                        <h2>Drivers</h2>
+                        <h3>Drivers</h3>
                     </Link>
                 </li>
                 <li>
                     <Link to="/sprints">
-                        <h2>Sprints & Races</h2>
+                        <h3>Sprints & Races</h3>
                     </Link>
                 </li>
                 <li>
                     <Link to="/pratices">
-                        <h2>Pratices</h2>
+                        <h3>Pratices</h3>
                     </Link>
                 </li>
             </ul>

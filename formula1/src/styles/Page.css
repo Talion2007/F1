@@ -90,6 +90,16 @@ section {
   }
 }
 
+.Carrousel {
+  width: 100%;
+  img{
+    width: 100%;
+    height: 70vh;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
 .BlockTwo {
   color: #15151fff;
   display: flex;
@@ -104,3 +114,8 @@ section {
     padding: 0;
   }
 }
+
+main {
+  text-align: justify;
+}
+
