@@ -9,7 +9,7 @@ function Sprints() {
     const [error, setError] = useState(null)
     const [year, setYear] = useState(() => {
         const saveYear = localStorage.getItem('Year Key');
-        return saveYear ? JSON.parse(saveYear) : [];
+        return saveYear ? JSON.parse(saveYear) : "2025";
     })
 
     useEffect(() => {
