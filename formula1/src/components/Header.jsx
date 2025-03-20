@@ -7,10 +7,10 @@ function Header() {
         <>
         <header>
         <title>Formula 1</title>
+        <NavBar />
         <Link to="/">
         <img src={Logo}></img>
         </Link>
-        <NavBar />
         </header>
         </>
     )

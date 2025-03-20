@@ -9,7 +9,12 @@
   #hamburger-trigger:checked ~ #options {
     display: flex;
     flex-direction: column;
-    
+    background-color: #21212c;
+    position: absolute;
+    z-index: 10;
+    width: 100%;
+    padding: 0%;
+    margin: 0%;
   }
   
   #options {
@@ -23,6 +28,7 @@
   
   svg {
     width: 3rem;
+    margin-left: auto;
   }
   
   #hamburger-trigger:checked ~ label svg#on {
