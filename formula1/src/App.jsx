@@ -13,6 +13,7 @@ function App() {
   return (
     <>
     <Analytics/>
+    <SpeedInsights/>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -22,7 +23,6 @@ function App() {
           <Route path="/qualifying" element={<Qualifying />} />
         </Routes>
       </BrowserRouter>
-    <SpeedInsights/>
     </>
   )
 }
