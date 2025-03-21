@@ -128,21 +128,21 @@ main {
 }
 
 @media screen and (max-width: 1624px) and (min-width: 1280px) {
-  section {  
+  section {
     p {
       width: 80vw;
     }
-  
+
     .divRaces {
       width: 27.5vw;
     }
   }
-  
+
   .CardDriver {
     width: 20vw;
     height: 20vw;
   }
-  
+
   .Carrousel {
     img {
       height: 65vh;
@@ -151,21 +151,21 @@ main {
 }
 
 @media screen and (max-width: 1279px) and (min-width: 1025px) {
-  section {  
+  section {
     p {
       width: 90vw;
     }
-  
+
     .divRaces {
       width: 40vw;
     }
   }
-  
+
   .CardDriver {
     width: 25vw;
     height: 25vw;
   }
-  
+
   .Carrousel {
     img {
       height: 60vh;
@@ -174,33 +174,35 @@ main {
 }
 
 @media screen and (max-width: 1024px) and (min-width: 769px) {
-  section {  
+  section {
     p {
       width: 90vw;
     }
-  
+
     .divRaces {
       width: 75vw;
+      box-shadow: none !important;
     }
   }
-  
+
   .container {
     select {
       max-width: 35vw;
     }
   }
-  
+
   .CardDriver {
     width: 35vw;
     height: 35vw;
+    box-shadow: none !important;
   }
-  
+
   .BlockOne {
     img {
       width: 10em;
     }
   }
-  
+
   .Carrousel {
     img {
       height: 55vh;
@@ -209,27 +211,29 @@ main {
 }
 
 @media screen and (max-width: 768px) and (min-width: 481px) {
-  section {  
+  section {
     p {
       width: 90vw;
     }
-  
+
     .divRaces {
       width: 85vw;
+      box-shadow: none !important;
     }
   }
-  
+
   .CardDriver {
     width: 55vw;
     height: 55vw;
+    box-shadow: none !important;
   }
-  
+
   .BlockOne {
     img {
       width: 8em;
     }
   }
-  
+
   .Carrousel {
     img {
       height: 45vh;
@@ -238,39 +242,40 @@ main {
 }
 
 @media screen and (max-width: 480px) {
-  section {  
+  section {
     p {
       width: 90vw;
     }
-  
+
     .divRaces {
       width: 85vw;
+      box-shadow: none !important;
     }
   }
-  
+
   .container {
     select {
       max-width: 35vw;
     }
   }
-  
+
   .CardDriver {
     width: 80vw;
     height: 80vw;
     box-shadow: none !important;
   }
-  
+
   .CardDriver:hover {
     transform: rotateY(360deg);
     transition: 2.5s;
   }
-  
+
   .BlockOne {
     img {
       width: 10em;
     }
   }
-  
+
   .Carrousel {
     img {
       height: 45vh;
