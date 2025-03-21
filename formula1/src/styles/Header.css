@@ -1,17 +1,33 @@
-header{
+header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     background-color: #15151fff;
-    
-    img{
+
+    img {
         padding: 1vw;
         width: auto;
         height: 4.5vw;
     }
-    
+
     a {
         margin-left: auto;
         margin-right: auto;
+    }
+}
+
+@media screen and (max-width: 1279px) and (min-width: 769px) {
+    header {
+        img {
+            height: 7vw;
+        }
+    }
+}
+
+@media screen and (max-width: 768px) {
+    header {
+        img {
+            height: 10vw;
+        }
     }
 }

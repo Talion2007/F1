@@ -32,7 +32,7 @@ section {
     border: antiquewhite 0.75em solid;
     margin: 1em;
     text-align: center;
-  box-shadow: #21212c 1.2em 1.2em 1.6em;
+    box-shadow: #21212c 1.2em 1.2em 1.6em;
 
     p {
       width: auto;
@@ -41,12 +41,12 @@ section {
   }
 }
 
-.container{
+.container {
   display: flex;
   flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
-   
+
   select {
     border: antiquewhite 0.25em solid;
     background-color: #21212c;
@@ -65,9 +65,9 @@ section {
   transition: 2.5s;
 }
 
-.CardDriver:hover{
-    transform: rotateY(360deg);
-    transition: 2.5s;
+.CardDriver:hover {
+  transform: rotateY(360deg);
+  transition: 2.5s;
 }
 
 .BlockOne {
@@ -99,7 +99,8 @@ section {
 
 .Carrousel {
   width: 100%;
-  img{
+
+  img {
     width: 100%;
     height: 70vh;
     object-fit: cover;
@@ -126,3 +127,152 @@ main {
   text-align: justify;
 }
 
+@media screen and (max-width: 1624px) and (min-width: 1280px) {
+  section {  
+    p {
+      width: 80vw;
+    }
+  
+    .divRaces {
+      width: 27.5vw;
+    }
+  }
+  
+  .CardDriver {
+    width: 20vw;
+    height: 20vw;
+  }
+  
+  .Carrousel {
+    img {
+      height: 65vh;
+    }
+  }
+}
+
+@media screen and (max-width: 1279px) and (min-width: 1025px) {
+  section {  
+    p {
+      width: 90vw;
+    }
+  
+    .divRaces {
+      width: 40vw;
+    }
+  }
+  
+  .CardDriver {
+    width: 25vw;
+    height: 25vw;
+  }
+  
+  .Carrousel {
+    img {
+      height: 60vh;
+    }
+  }
+}
+
+@media screen and (max-width: 1024px) and (min-width: 769px) {
+  section {  
+    p {
+      width: 90vw;
+    }
+  
+    .divRaces {
+      width: 75vw;
+    }
+  }
+  
+  .container {
+    select {
+      max-width: 35vw;
+    }
+  }
+  
+  .CardDriver {
+    width: 35vw;
+    height: 35vw;
+  }
+  
+  .BlockOne {
+    img {
+      width: 10em;
+    }
+  }
+  
+  .Carrousel {
+    img {
+      height: 55vh;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) and (min-width: 481px) {
+  section {  
+    p {
+      width: 90vw;
+    }
+  
+    .divRaces {
+      width: 85vw;
+    }
+  }
+  
+  .CardDriver {
+    width: 55vw;
+    height: 55vw;
+  }
+  
+  .BlockOne {
+    img {
+      width: 8em;
+    }
+  }
+  
+  .Carrousel {
+    img {
+      height: 45vh;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  section {  
+    p {
+      width: 90vw;
+    }
+  
+    .divRaces {
+      width: 85vw;
+    }
+  }
+  
+  .container {
+    select {
+      max-width: 35vw;
+    }
+  }
+  
+  .CardDriver {
+    width: 80vw;
+    height: 80vw;
+  }
+  
+  .CardDriver:hover {
+    transform: rotateY(360deg);
+    transition: 2.5s;
+  }
+  
+  .BlockOne {
+    img {
+      width: 10em;
+    }
+  }
+  
+  .Carrousel {
+    img {
+      height: 45vh;
+    }
+  }
+}

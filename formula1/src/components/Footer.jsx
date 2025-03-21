@@ -3,7 +3,7 @@ function Footer() {
     return (
         <>
             <footer>
-                <h2>AlphaOne Development</h2>
+                <h3>AlphaOne Development</h3>
                 <p>Transformando ideias em soluções inovadoras para um futuro tecnológico.</p>
                 <p>Copyright 2025 - Todos os direitos reservados</p>
                 <p>Felipe Cagnin de Lima</p>

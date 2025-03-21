@@ -1,7 +1,11 @@
 footer{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    flex-direction: column;
     text-align: center;
     background-color: #15151fff;
-    padding: 1vw;
+    padding: 0.5vw;
     color: #ff1e00ff;
     margin-top: 1em;
 }

@@ -3,21 +3,28 @@ import { useEffect, useState } from "react";
 import "../styles/NavBar.css"
 function NavBar() {
     const [navbar, setNavbar] = useState(false);
+    const [widthSize, setWidthSize] = useState(window.screen.width)
 
     useEffect(() => {
-        const windowSize = window.screen.width
-        if (windowSize < 768) {
-            setNavbar(true)
-        } else {
-            setNavbar(false)
-        }
-    },[])
+        const Interval = setInterval(() => {
+            setWidthSize(window.screen.width)
+            if (widthSize < 1024) {
+                setNavbar(true)
+            } else {
+                setNavbar(false)
+            }
+        })
+
+        return () => clearInterval(Interval)
+    }, [widthSize])
+
 
     return (
         <nav>
-            {navbar ? <><input type='checkbox' id="hamburger-trigger" />
+            {navbar ? <>
+                <input type='checkbox' id="hamburger-trigger" />
                 <label for="hamburger-trigger">
-                    <svg id="on" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <svg className="svg" id="on" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
 

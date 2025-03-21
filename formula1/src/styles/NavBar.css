@@ -1,4 +1,54 @@
-#hamburger-trigger {
+nav {
+  width: 70%;
+  color: #ff1e00ff;
+
+  ul {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    margin: 0;
+  }
+
+  li:hover {
+    background-color: #21212c;
+    border-radius: 1em;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+
+    padding: 1.5vw;
+    width: auto;
+  }
+
+  button {
+    border: none;
+    background: none;
+    text-decoration: none;
+    color: #ff1e00ff;
+    width: 100%;
+    height: 100%;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    text-decoration: none;
+    color: #ff1e00ff;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@media screen and (max-width: 1024px)  {
+  #hamburger-trigger {
     display: none;
   }
   
@@ -6,13 +56,14 @@
     display: none;
   }
   
-  #hamburger-trigger:checked ~ #options {
+  #hamburger-trigger:checked~#options {
     display: flex;
     flex-direction: column;
     background-color: #21212c;
     position: absolute;
     z-index: 10;
     width: 100%;
+    height: auto;
     padding: 0%;
     margin: 0%;
   }
@@ -31,67 +82,19 @@
     margin-left: auto;
   }
   
-  #hamburger-trigger:checked ~ label svg#on {
+  #hamburger-trigger:checked~label svg#on {
     display: none;
   }
   
-  #hamburger-trigger:checked ~ label svg#off {
+  #hamburger-trigger:checked~label svg#off {
     display: inline;
   }
   
-  #hamburger-trigger ~ label  svg#off {
+  #hamburger-trigger~label svg#off {
     display: none;
   }
   
-  #hamburger-trigger ~ label svg#on {
+  #hamburger-trigger~label svg#on {
     display: inline;
   }
-
-nav {
-    width: 70%;
-    color: #ff1e00ff;
-
-    ul {
-        display: flex;
-        flex-direction: row;
-        list-style: none;
-        margin: 0;
-    }
-
-    li:hover{
-        background-color: #21212c;
-        border-radius: 1em;
-    }
-
-    li{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: auto;
-        margin-right: auto;
-
-        padding: 1.5vw;
-        width: auto;
-    }
-
-    button{
-        border: none;
-        background: none;
-        text-decoration: none;
-        color: #ff1e00ff;
-        width: 100%;
-        height: 100%;
-    }
-
-    a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-
-        text-decoration: none;
-        color: #ff1e00ff;
-        width: 100%;
-        height: 100%;
-    }
 }
