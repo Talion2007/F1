@@ -176,12 +176,14 @@ main {
 @media screen and (max-width: 1024px) and (min-width: 769px) {
   section {
     p {
+      color:#21212c;
       width: 90vw;
     }
 
     .divRaces {
       width: 75vw;
       box-shadow: none !important;
+    border: #21212c 0.75em solid;
     }
   }
 
@@ -189,12 +191,17 @@ main {
     select {
       max-width: 35vw;
     }
+
+    .title{
+      color:#21212c;
+    }
   }
 
   .CardDriver {
     width: 35vw;
     height: 35vw;
     box-shadow: none !important;
+    border: #21212c 0.75em solid;
   }
 
   .BlockOne {
@@ -214,11 +221,19 @@ main {
   section {
     p {
       width: 90vw;
+      color:#21212c;
     }
 
     .divRaces {
       width: 85vw;
       box-shadow: none !important;
+    border: #21212c 0.75em solid;
+    }
+  }
+
+  .container{
+    .title{
+      color:#21212c;
     }
   }
 
@@ -226,6 +241,7 @@ main {
     width: 55vw;
     height: 55vw;
     box-shadow: none !important;
+    border: #21212c 0.75em solid;
   }
 
   .BlockOne {
@@ -245,11 +261,13 @@ main {
   section {
     p {
       width: 90vw;
+      color:#21212c;
     }
 
     .divRaces {
       width: 85vw;
       box-shadow: none !important;
+    border: #21212c 0.75em solid;
     }
   }
 
@@ -257,12 +275,17 @@ main {
     select {
       max-width: 35vw;
     }
+
+      .title{
+        color:#21212c;
+      }
   }
 
   .CardDriver {
     width: 80vw;
     height: 80vw;
     box-shadow: none !important;
+    border: #21212c 0.75em solid;
   }
 
   .CardDriver:hover {
