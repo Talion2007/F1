@@ -176,7 +176,6 @@ main {
 @media screen and (max-width: 1024px) and (min-width: 769px) {
   section {
     p {
-      color:#21212c;
       width: 90vw;
     }
 
@@ -185,6 +184,10 @@ main {
       box-shadow: none !important;
     border: #21212c 0.75em solid;
     }
+  }
+
+  main {
+    color:#21212c;
   }
 
   .title{
@@ -221,7 +224,6 @@ main {
   section {
     p {
       width: 90vw;
-      color:#21212c;
     }
 
     .divRaces {
@@ -229,6 +231,10 @@ main {
       box-shadow: none !important;
     border: #21212c 0.75em solid;
     }
+  }
+
+  main {
+    color:#21212c;
   }
 
   .title{
@@ -259,7 +265,6 @@ main {
   section {
     p {
       width: 90vw;
-      color:#21212c;
     }
 
     .divRaces {
@@ -267,6 +272,10 @@ main {
       box-shadow: none !important;
     border: #21212c 0.75em solid;
     }
+  }
+
+  main {
+    color:#21212c;
   }
 
   .title{
