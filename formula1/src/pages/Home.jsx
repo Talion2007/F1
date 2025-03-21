@@ -32,7 +32,7 @@ function Home() {
           {carrousel == 3 ? <img src={carrouselTri} alt="carrouselFront" /> : ""}
         </div>
 
-        <h1>Fórmula 1</h1>
+        <h1 className="title">Fórmula 1</h1>
 
 <main>
         <p>Formula 1 (F1) is the epitome of speed, precision, and strategy, where the world’s best drivers, engineers, and teams come together to compete at the highest level of motorsport. With a history spanning more than 70 years, F1 has evolved into a global spectacle watched by millions around the world, captivating audiences with its breathtaking speed, cutting-edge technology, and intense rivalries. The races take place on a wide variety of tracks, each offering unique challenges for both drivers and teams. From the famous and historical circuits like Monaco, Silverstone, and Spa-Francorchamps to newer additions like the Baku City Circuit and the Circuit of the Americas, Formula 1 offers a combination of tight, twisty city streets and high-speed, open circuits. The diversity of these tracks adds a rich layer of complexity to the sport, making it one of the most challenging and exciting motorsports in the world. At the core of F1 is the battle for two prestigious titles: the World Drivers' Championship and the Constructors' Championship, both of which represent the highest achievements in the sport, with every team and driver striving for glory in each of the 22–24 race weekends of the season.</p>

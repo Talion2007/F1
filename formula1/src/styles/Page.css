@@ -187,13 +187,13 @@ main {
     }
   }
 
+  .title{
+    color:#21212c;
+  }
+
   .container {
     select {
       max-width: 35vw;
-    }
-
-    .title{
-      color:#21212c;
     }
   }
 
@@ -231,10 +231,8 @@ main {
     }
   }
 
-  .container{
-    .title{
-      color:#21212c;
-    }
+  .title{
+    color:#21212c;
   }
 
   .CardDriver {
@@ -271,14 +269,14 @@ main {
     }
   }
 
+  .title{
+    color:#21212c;
+  }
+
   .container {
     select {
       max-width: 35vw;
     }
-
-      .title{
-        color:#21212c;
-      }
   }
 
   .CardDriver {
