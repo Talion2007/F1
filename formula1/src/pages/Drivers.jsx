@@ -25,7 +25,7 @@ function Drivers() {
           `https://api.openf1.org/v1/drivers?&session_key=${sessionKey}`
         );
         const responseQualy = await fetch(
-          "https://api.openf1.org/v1/sessions?session_type=Qualifying"
+          "https://api.openf1.org/v1/sessions?session_name=Qualifying"
         );
         if (!response.ok) {
           throw new Error("Fudeu");
