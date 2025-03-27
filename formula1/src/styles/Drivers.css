@@ -4,7 +4,7 @@
     align-items: center;
     width: 15vw;
     height: 15vw;
-    margin: 2.5em;
+    margin: 1em;
     perspective: none;
   }
   
@@ -92,14 +92,14 @@
     }
   }
 
-  @media screen and (max-width: 1740px) {
+  @media screen and (max-width: 1500px) {
     .Card {
       width: 19vw;
       height: 19vw;
     }
   }
 
-  @media screen and (max-width: 1430px) {
+  @media screen and (max-width: 1330px) {
     .Card {
       width: 22vw;
       height: 22vw;
