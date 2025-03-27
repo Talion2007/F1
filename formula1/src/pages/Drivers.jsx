@@ -1,7 +1,10 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Loading from "../components/Loading";
 import { useState, useEffect } from "react";
 import "../styles/Page.css";
+import "../styles/Drivers.css"
+
 function Drivers() {
   const [users, setUsers] = useState(() => {
     const saveUsers = localStorage.getItem("User Key");
@@ -21,6 +24,7 @@ function Drivers() {
   useEffect(() => {
     async function fetchUsers() {
       try {
+        setLoading(true)
         const response = await fetch(
           `https://api.openf1.org/v1/drivers?&session_key=${sessionKey}`
         );
@@ -67,37 +71,67 @@ function Drivers() {
         </div>
         <article>
           {loading ? (
-            <h1>Carregando...</h1>
+            <Loading />
           ) : (
             <>
               {users.map((user) => (
-                <div
-                  key={user.driver_number}
-                  className="CardDriver"
-                  style={{ backgroundColor: "#" + user.team_colour }}
-                >
-                  <div className="BlockOne">
-                    <h1 style={{ color: "#" + user.team_colour }}>
-                      {user.driver_number.toLocaleString(`en-US`, {
-                        minimumIntegerDigits: 2,
-                      })}
-                    </h1>
-                    <img src={user.headshot_url}></img>
-                  </div>
-                  <div className="BlockTwo">
-                    <h3>
-                      {user.full_name} ({user.name_acronym})
-                    </h3>
-                    <h4>
-                      {user.country_code} - {user.team_name}
-                    </h4>
+                <div className="Card"
+                  key={user.driver_number}>
+                  <div className="CardInner">
+                    <div
+                      className="CardDriverFront"
+                      style={{ backgroundColor: "#" + user.team_colour }}
+                    >
+                      <div className="BlockOne">
+                        <h1 style={{ color: "#" + user.team_colour }}>
+                          {user.driver_number.toLocaleString(`en-US`, {
+                            minimumIntegerDigits: 2,
+                          })}
+                        </h1>
+                        <img src={user.headshot_url}></img>
+                      </div>
+                      <div className="BlockTwo">
+                        <h3>
+                          {user.full_name} ({user.name_acronym})
+                        </h3>
+                        <h4>
+                          {user.country_code ? user.country_code : "UNK"} - {user.team_name}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <div
+                      className="CardDriverBack"
+                      style={{ backgroundColor: "#" + user.team_colour }}
+                    >
+                      <h3>
+                        Driver Number: {user.driver_number.toLocaleString(`en-US`, {
+                          minimumIntegerDigits: 2,
+                        })}
+                      </h3>
+                      <h3>
+                        Full Name: {user.full_name}
+                      </h3>
+                      <h3>
+                        Broadcast Name: {user.broadcast_name}
+                      </h3>
+                      <h3>
+                        Name Acronym: {user.name_acronym}
+                      </h3>
+                      <h3>
+                        Country Code: {user.country_code ? user.country_code : "Unknoun"}
+                      </h3>
+                      <h3>
+                        Team Name: {user.team_name}
+                      </h3>
+
+                    </div>
                   </div>
                 </div>
               ))}
             </>
           )}
         </article>
-        {error ? <p>Error</p> : ""}
       </section>
       <Footer />
     </>

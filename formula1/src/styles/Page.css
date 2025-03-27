@@ -3,6 +3,7 @@ article {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-around;
+  gap: 1em;
 }
 
 section {
@@ -55,46 +56,8 @@ section {
   }
 }
 
-.CardDriver {
-  width: 15vw;
-  height: 15vw;
-  margin: 1em;
-  border: antiquewhite 0.75em solid;
-  border-radius: 2em;
-  box-shadow: #21212c 1.2em 1.2em 1.6em;
-  transition: 2.5s;
-}
-
-.CardDriver:hover {
-  transform: rotateY(360deg);
-  transition: 2.5s;
-}
-
-.BlockOne {
-  width: 100%;
-  background-image: url("../assets/effect.png");
-  background-size: cover;
-  background-position: top;
-  background-color: #21212c;
-  border-radius: 1em 1em 0 0;
-  height: 65%;
-
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: space-around;
-
-  h1 {
-    align-self: flex-start;
-    font-size: 4em;
-    margin: 0%;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    text-shadow: -3px 0 #15151fff, 0 1px #15151fff, 1px 0 #15151fff, 0 -1px #15151fff;
-  }
-
-  img {
-    width: 8em;
-  }
+main {
+  text-align: justify;
 }
 
 .Carrousel {
@@ -108,26 +71,8 @@ section {
   }
 }
 
-.BlockTwo {
-  color: #15151fff;
-  display: flex;
-  flex-direction: column;
-  padding: 1em;
-  width: auto;
-  height: auto;
 
-  h4,
-  h3 {
-    margin: 0%;
-    padding: 0;
-  }
-}
-
-main {
-  text-align: justify;
-}
-
-@media screen and (max-width: 1624px) and (min-width: 1280px) {
+@media screen and (max-width: 1624px) {
   section {
     p {
       width: 80vw;
@@ -138,11 +83,6 @@ main {
     }
   }
 
-  .CardDriver {
-    width: 20vw;
-    height: 20vw;
-  }
-
   .Carrousel {
     img {
       height: 65vh;
@@ -150,7 +90,7 @@ main {
   }
 }
 
-@media screen and (max-width: 1279px) and (min-width: 1025px) {
+@media screen and (max-width: 1279px) {
   section {
     p {
       width: 90vw;
@@ -161,11 +101,6 @@ main {
     }
   }
 
-  .CardDriver {
-    width: 25vw;
-    height: 25vw;
-  }
-
   .Carrousel {
     img {
       height: 60vh;
@@ -173,7 +108,7 @@ main {
   }
 }
 
-@media screen and (max-width: 1024px) and (min-width: 769px) {
+@media screen and (max-width: 1024px) {
   section {
     p {
       width: 90vw;
@@ -200,19 +135,6 @@ main {
     }
   }
 
-  .CardDriver {
-    width: 35vw;
-    height: 35vw;
-    box-shadow: none !important;
-    border: #21212c 0.75em solid;
-  }
-
-  .BlockOne {
-    img {
-      width: 10em;
-    }
-  }
-
   .Carrousel {
     img {
       height: 55vh;
@@ -220,7 +142,7 @@ main {
   }
 }
 
-@media screen and (max-width: 768px) and (min-width: 481px) {
+@media screen and (max-width: 768px) {
   section {
     p {
       width: 90vw;
@@ -239,19 +161,6 @@ main {
 
   .title{
     color:#21212c;
-  }
-
-  .CardDriver {
-    width: 55vw;
-    height: 55vw;
-    box-shadow: none !important;
-    border: #21212c 0.75em solid;
-  }
-
-  .BlockOne {
-    img {
-      width: 8em;
-    }
   }
 
   .Carrousel {
@@ -285,24 +194,6 @@ main {
   .container {
     select {
       max-width: 35vw;
-    }
-  }
-
-  .CardDriver {
-    width: 80vw;
-    height: 80vw;
-    box-shadow: none !important;
-    border: #21212c 0.75em solid;
-  }
-
-  .CardDriver:hover {
-    transform: rotateY(360deg);
-    transition: 2.5s;
-  }
-
-  .BlockOne {
-    img {
-      width: 10em;
     }
   }
 

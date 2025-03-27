@@ -1,5 +1,6 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Loading from "../components/Loading";
 import { useState, useEffect } from "react";
 import "../styles/Page.css"
 
@@ -18,6 +19,7 @@ function Pratices() {
     useEffect(() => {
         async function fetchUsers() {
             try {
+                setLoading(true)
                 const response = await fetch(`https://api.openf1.org/v1/sessions?session_type=Practice&year=${year}`)
                 if (!response.ok) {
                     throw new Error("Fudeu")
@@ -63,7 +65,7 @@ function Pratices() {
                 <article>
 
                     {loading ?
-                        <h1>Carregando...</h1> :
+                         <Loading/> :
                         <>{praticeOne.map((user) => (
                             <div key={user.session_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
@@ -89,9 +91,6 @@ function Pratices() {
                                 </p>
                             </div>
                         ))}</>}
-
-                    {error ? <p>Error</p> : ""}
-
                 </article>
 
                 <h1 className="title">Pratices 2 - F1 {year}</h1>
@@ -99,7 +98,7 @@ function Pratices() {
                 <article>
 
                     {loading ?
-                        <h1>Carregando...</h1> :
+                         <Loading/> :
                         <>{praticeTwo.map((user) => (
                             <div key={user.session_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
@@ -125,9 +124,6 @@ function Pratices() {
                                 </p>
                             </div>
                         ))}</>}
-
-                    {error ? <p>Error</p> : ""}
-
                 </article>
 
                 <h1 className="title">Pratices 3 - F1 {year}</h1>
@@ -135,7 +131,7 @@ function Pratices() {
                 <article>
 
                     {loading ?
-                        <h1>Carregando...</h1> :
+                         <Loading/> :
                         <>{praticeTri.map((user) => (
                             <div key={user.session_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
@@ -161,9 +157,6 @@ function Pratices() {
                                 </p>
                             </div>
                         ))}</>}
-
-                    {error ? <p>Error</p> : ""}
-
                 </article>
             </section>
 
