@@ -8,7 +8,7 @@
   .email-form input[type="email"] {
     width: 100%;
     max-width: 400px;
-    padding: 0.75rem 1rem;
+    padding: 1rem 1rem;
     border: 2px solid #d3d3d3;
     border-radius: 8px;
     font-size: 1rem;
@@ -34,8 +34,3 @@
   .email-form button:hover {
     background-color: #b00000;
   }
-  
-  .email-form p {
-    font-weight: bold;
-  }
-  

@@ -4,7 +4,7 @@ import "../styles/Email.css";
 
 function EmailForm() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(true);
 
   const sendEmail = (e) => {
     e.preventDefault();
@@ -15,15 +15,20 @@ function EmailForm() {
       { email },             // data to send
       "AEf0rLomnd13Rvmw6"      // from EmailJS account
     ).then(() => {
-      setStatus("✅ Email sent!");
+      setStatus(false)
       setEmail("");
+      alert("Email enviado com Sucesso!")
     }).catch((err) => {
       console.error(err);
-      setStatus("❌ Failed to send email.");
+      setStatus(true)
+      alert("Erro ao enviar o email. Tente novamente mais tarde.");
     });
   };
 
   return (
+    <>
+    {status ? 
+      <>
     <form onSubmit={sendEmail} className="email-form">
       <input
         type="email"
@@ -33,8 +38,14 @@ function EmailForm() {
         onChange={(e) => setEmail(e.target.value)}
       />
       <button type="submit">Send Email</button>
-      {status && <p>{status}</p>}
-    </form>
+    </form> 
+    </>
+    : 
+    <>
+      <h3 className="title">Email enviado com sucesso!</h3>
+    </>
+    }
+    </>
   );
 }
 
