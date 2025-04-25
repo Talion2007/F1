@@ -8,4 +8,22 @@ footer{
     padding: 0.5vw;
     color: #ff1e00ff;
     margin-top: 1em;
+    margin-bottom: 1em;
+
+    .socials {
+        display: flex;
+        justify-content: center;
+        gap: 2em;
+        margin-top: 0.5em;
+
+        a{
+            color: #ff1e00ff;
+            transition: all 0.3s ease-in-out;
+
+            &:hover{
+                color: #ff1e00ff;
+                transform: scale(1.2);
+            }
+        }
+    }
 }

@@ -1,152 +1,158 @@
 .Card {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 15vw;
-    height: 15vw;
-    margin: 1em;
-    perspective: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 15vw;
+  height: 15vw;
+  margin: 1em;
+  perspective: 1000px;
+} 
+
+.CardInner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+  box-shadow: #21212c 1.2em 1.2em 1.6em;
+  position: relative;
+}
+
+.CardInner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+/* Removido hover */
+/* .Card:hover .CardInner {
+  transform: rotateY(180deg);
+} */
+
+.CardDriverFront,
+.CardDriverBack {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  border: antiquewhite 0.75em solid;
+  border-radius: 2em;
+  backface-visibility: hidden;
+}
+
+.CardDriverBack {
+  transform: rotateY(180deg);
+  color: #15151fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  text-align: center;
+
+  h3 {
+    margin: 0%;
+    padding: 0;
   }
-  
-  .CardInner {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;  
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transition: 1s;
-    box-shadow: #21212c 1.2em 1.2em 1.6em;
-  }
-  
-  .Card:hover .CardInner {
-    transform: rotateY(180deg);
-  }
-  
-  .CardDriverFront,
-  .CardDriverBack {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    border: antiquewhite 0.75em solid;
-    border-radius: 2em;
-    backface-visibility: hidden;
-  }
-  
-  .CardDriverBack {
-    transform: rotateY(180deg);
-    color: #15151fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    align-items: center;
-    text-align: center;
-  
-    h4,
-    h3 {
-      margin: 0%;
-      padding: 0;
-    }
-  }
-  
-  .BlockOne {
-    width: 100%;
-    background-image: url("../assets/effect.png");
-    background-size: cover;
-    background-position: top;
-    background-color: #21212c;
-    border-radius: 1em 1em 0 0;
-    height: 65%;
-  
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-around;
-  
-    h1 {
-      align-self: flex-start;
-      font-size: 4em;
-      margin: 0%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      text-shadow: -3px 0 #15151fff, 0 1px #15151fff, 1px 0 #15151fff, 0 -1px #15151fff;
-    }
-  
-    img {
-      width: 8em;
-    }
-  }
-  
-  .BlockTwo {
-    color: #15151fff;
-    display: flex;
-    flex-direction: column;
-    padding: 1em;
-    width: auto;
-    height: auto;
-  
-    h4,
-    h3 {
-      margin: 0%;
-      padding: 0;
-    }
+}
+
+.BlockOne {
+  width: 100%;
+  background-image: url("../assets/effect.png");
+  background-size: cover;
+  background-position: top;
+  background-color: #21212c;
+  border-radius: 1em 1em 0 0;
+  height: 65%;
+
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-around;
+
+  h1 {
+    align-self: flex-start;
+    font-size: 4em;
+    margin: 0%;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-shadow: -3px 0 #15151fff, 0 1px #15151fff, 1px 0 #15151fff, 0 -1px #15151fff;
   }
 
-  @media screen and (max-width: 1500px) {
-    .Card {
-      width: 19vw;
-      height: 19vw;
-    }
+  img {
+    width: 8em;
   }
+}
 
-  @media screen and (max-width: 1330px) {
-    .Card {
-      width: 22vw;
-      height: 22vw;
-    }
-  }
+.BlockTwo {
+  color: #15151fff;
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  width: auto;
+  height: auto;
 
-  @media screen and (max-width: 1190px) {
-    .Card {
-      width: 25vw;
-      height: 25vw;
-    }
+  h4,
+  h3 {
+    margin: 0%;
+    padding: 0;
   }
+}
 
-  @media screen and (max-width: 1024px) {
-    .Card {
-      width: 30vw;
-      height: 30vw;
-    }
-    .CardDriverBack, .CardDriverFront {
-      border: #21212c 0.75em solid;
-    }
+/* Responsivo (mantido igual) */
+@media screen and (max-width: 1500px) {
+  .Card {
+    width: 19vw;
+    height: 19vw;
   }
+}
 
-  @media screen and (max-width: 890px) {
-    .Card {
-      width: 40vw;
-      height: 40vw;
-    }
+@media screen and (max-width: 1330px) {
+  .Card {
+    width: 22vw;
+    height: 22vw;
   }
+}
 
-  @media screen and (max-width: 670px) {
-    .Card {
-      width: 50vw;
-      height: 50vw;
-    }
+@media screen and (max-width: 1190px) {
+  .Card {
+    width: 25vw;
+    height: 25vw;
   }
+}
 
-  @media screen and (max-width: 530px) {
-    .Card {
-      width: 65vw;
-      height: 65vw;
-    }
+@media screen and (max-width: 1024px) {
+  .Card {
+    width: 30vw;
+    height: 30vw;
   }
+  .CardDriverBack, .CardDriverFront {
+    border: #21212c 0.75em solid;
+  }
+}
 
-  @media screen and (max-width: 450px) {
-    .Card {
-      width: 72.5vw;
-      height: 72.5vw;
-    }
+@media screen and (max-width: 890px) {
+  .Card {
+    width: 40vw;
+    height: 40vw;
   }
+}
+
+@media screen and (max-width: 670px) {
+  .Card {
+    width: 50vw;
+    height: 50vw;
+  }
+}
+
+@media screen and (max-width: 530px) {
+  .Card {
+    width: 65vw;
+    height: 65vw;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  .Card {
+    width: 72.5vw;
+    height: 72.5vw;
+  }
+}

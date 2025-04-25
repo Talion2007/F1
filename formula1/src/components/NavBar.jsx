@@ -58,6 +58,11 @@ function NavBar() {
                             <h3>Qualifying</h3>
                         </Link>
                     </li>
+                    <li>
+                        <Link to="/contact">
+                            <h3>About Me</h3>
+                        </Link>
+                    </li>
                 </ul></> 
                 :
                  <ul>
@@ -86,6 +91,11 @@ function NavBar() {
                         <h3>Qualifying</h3>
                     </Link>
                 </li>
+                <li>
+                        <Link to="/contact">
+                            <h3>About Me</h3>
+                        </Link>
+                    </li>
             </ul>}
 
         </nav>

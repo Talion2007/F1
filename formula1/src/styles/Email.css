@@ -5,7 +5,7 @@
     gap: 1rem;
   }
   
-  .email-form input[type="email"] {
+  .email-form input {
     width: 100%;
     max-width: 400px;
     padding: 1rem 1rem;
@@ -15,7 +15,7 @@
     transition: border-color 0.3s ease;
   }
   
-  .email-form input[type="email"]:focus {
+  .email-form input:focus {
     border-color: #e10600; /* F1 Red */
     outline: none;
   }

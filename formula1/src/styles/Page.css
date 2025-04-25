@@ -6,6 +6,47 @@ article {
   gap: 1em;
 }
 
+.profile {
+  display : flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  gap: 2.5em;
+  align-items: center;
+  flex-wrap: wrap;
+
+  p {
+    width: 40vw;
+    text-align: justify;
+  }
+}
+
+.profile-image {
+  width: 25vw;
+  height: 25vw;
+  border-radius: 2.5em;
+  margin-bottom: 1em;
+  object-fit: cover;
+  object-position: top;
+}
+
+.ContactUs {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5em;
+  background-color: #21212c;
+  width: 100%;
+  padding-bottom: 2em;
+
+  p {
+    color: antiquewhite;
+  }
+  h2 {
+    color: antiquewhite;
+  }
+}
+
 section {
   color: antiquewhite;
   display: flex;
@@ -25,9 +66,9 @@ section {
 
   .divRaces {
     width: 25vw;
-    background-image: url("../assets/effect.png");
+    background-image: url("../assets/ultra.png");
     background-size: cover;
-    background-position: top;
+    background-position: center;
     background-color: #21212c;
     border-radius: 1em;
     border: antiquewhite 0.75em solid;
@@ -35,9 +76,17 @@ section {
     text-align: center;
     box-shadow: #21212c 1.2em 1.2em 1.6em;
 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
     p {
       width: auto;
-      text-shadow: -1px 0 #15151fff, 0 1px #15151fff, 1px 0 #15151fff, 0 -1px #15151fff;
+      text-shadow: -1px 0 #15151fff, 0 1px black, 1px 0 #15151fff, 0 -1px #15151fff;
+      font-size: larger;
+      margin: 0%;
+      padding: 0.5em;
     }
   }
 }
@@ -73,6 +122,20 @@ main {
 
 
 @media screen and (max-width: 1624px) {
+  .profile {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    p {
+      width: 80vw;
+    }
+  }
+  .profile-image {
+    width: 40vw;
+    height: 40vw;
+  }
+
   section {
     p {
       width: 80vw;
@@ -101,6 +164,12 @@ main {
     }
   }
 
+  .profile-image {
+    width: 75vw;
+    height: 75vw;
+  }
+
+
   .Carrousel {
     img {
       height: 60vh;
@@ -122,6 +191,10 @@ main {
   }
 
   main {
+    color:#21212c;
+  }
+
+  .Main {
     color:#21212c;
   }
 

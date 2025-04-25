@@ -4,7 +4,6 @@ import carrouselFront from "../assets/carrouselFront.jpg"
 import carrouselOne from "../assets/carrouselOne.jpg"
 import carrouselTwo from "../assets/carrouselTwo.jpg"
 import carrouselTri from "../assets/carrouselTri.webp"
-import Email from "../components/Email"
 import { useState, useEffect } from "react";
 import "../styles/Page.css"
 
@@ -44,9 +43,6 @@ function Home() {
         <p>In addition to the technical and strategic aspects, Formula 1 also has a rich history, filled with historic moments, milestones, and record-breaking performances. Michael Schumacher set the standard for dominance with seven World Championships, while Sebastian Vettel’s four consecutive titles (2010-2013) were a period of unrivaled consistency. However, the sport is constantly evolving, and new records are set each season. Lewis Hamilton has become the most successful driver of the modern era, with 104 Grand Prix victories to his name as of 2025. He also shares the record for the most World Championships with Schumacher. In addition, the sport is seeing young stars like Max Verstappen and Charles Leclerc challenge the established order, signaling a bright future for F1. Verstappen, in particular, has been dominant in recent seasons, winning multiple World Championships and becoming one of the most talented and competitive drivers of his generation. With the advent of hybrid technology and the sport’s drive for sustainability, the future of Formula 1 is set to be as thrilling as its past, with new innovations on the horizon and exciting challenges ahead for the sport’s top teams and drivers.</p>
         <p>Formula 1 remains one of the most watched and celebrated sports in the world, a perfect blend of speed, technology, and human skill. It continues to evolve, bringing new fans and exciting developments while honoring its rich history and traditions. As the sport looks to the future, with sustainability efforts like carbon neutrality by 2030 and continued technological advancements, F1 will undoubtedly continue to capture the imagination of millions and deliver the thrilling action that has made it the crown jewel of motorsport.</p>
 </main>
-
-        <h2 className="title">Contact Us</h2>
-      <Email/>
 
       </section>
 

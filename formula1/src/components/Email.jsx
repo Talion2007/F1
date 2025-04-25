@@ -4,6 +4,7 @@ import "../styles/Email.css";
 
 function EmailForm() {
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [status, setStatus] = useState(true);
 
   const sendEmail = (e) => {
@@ -12,7 +13,7 @@ function EmailForm() {
     emailjs.send(
       "service_vasotur",     // from EmailJS dashboard
       "template_b164ekm",    // from EmailJS dashboard
-      { email },             // data to send
+      { email, name },             // data to send
       "AEf0rLomnd13Rvmw6"      // from EmailJS account
     ).then(() => {
       setStatus(false)
@@ -30,6 +31,13 @@ function EmailForm() {
     {status ? 
       <>
     <form onSubmit={sendEmail} className="email-form">
+    <input
+        type="text"
+        placeholder="Enter your name"
+        required
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <input
         type="email"
         placeholder="Enter your email"
@@ -42,7 +50,7 @@ function EmailForm() {
     </>
     : 
     <>
-      <h3 className="title">Email enviado com sucesso!</h3>
+      <h3>Email enviado com sucesso!</h3>
     </>
     }
     </>
