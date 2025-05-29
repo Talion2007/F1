@@ -1,0 +1,100 @@
+.auth-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 99vh;
+}
+.auth-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 2em;
+    gap: 2em;
+}
+.LoginButton, .RegisterButton {
+    padding: 1em;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 7.5em;
+}
+.RegisterButton {
+  background-color: #28a745;
+}
+.totalContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: #007bff solid 1px;
+    border-radius: 10px;
+    padding: 2em;
+    margin: 1em;
+    background-color: whitesmoke;
+
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        input {
+            margin: 0.5em;
+            padding: 0.5em;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        button {
+            padding: 0.5em 1em;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 1em;
+        }
+
+        p{
+            margin-top: 1em;
+            color: red;
+            font-size: 14px;
+            width: 100%;
+        }
+    }
+}
+
+.totalContainer.signin {
+    color: #007bff;
+    button {
+        background-color: #007bff;
+    }
+}
+.totalContainer.signup {
+    color: #28a745;
+    button {
+        background-color: #28a745;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .auth-container {
+        flex-direction: column;
+        padding: 1em;
+        gap: 0.5em;
+        h1 {
+            color : #21212c;
+        }
+    }
+    .LoginButton, .RegisterButton {
+        width: 100%;
+        margin: 0.5em 0;
+    }
+}
