@@ -130,3 +130,14 @@
         margin: 0.5em 0;
     }
 }
+
+@media screen and (max-width: 1024px) {
+    .auth-page {
+        width: 100%;
+}
+.totalContainer{
+    background-color:#21212c;
+    width: auto;
+    height: auto;
+}
+}
