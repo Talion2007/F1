@@ -1,44 +1,45 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { db } from "../firebase/firebaseConfig"; // <-- CORREÇÃO AQUI
+// src/pages/Chat.jsx
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { db } from "../firebase/firebaseConfig"; // Ajustado o caminho
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { useAuth } from "../context/AuthContext"; // <-- CORREÇÃO AQUI também se AuthContext estiver em src/context
+import { useAuth } from "../context/AuthContext"; // Ajustado o caminho
 
-// Importe Header e Footer para manter o layout da Home
-import Header from "../components/Header"; // <-- CORREÇÃO AQUI
-import Footer from "../components/Footer"; // <-- CORREÇÃO AQUI
+import Header from "../components/Header"; // Ajustado o caminho
+import Footer from "../components/Footer"; // Ajustado o caminho
 
-// Você pode querer criar um Chat.css para estilos específicos do chat
-// mas usaremos Page.css para estilos gerais e Auth.css para containers iniciais
-import "../styles/Page.css"; // <-- CORREÇÃO AQUI
-import "../styles/Auth.css"; // <-- CORREÇÃO AQUI
-import "../styles/Chat.css"; // <-- CORREÇÃO AQUI
+// Importe o arquivo de som
+import notificationSound from '../assets/notification.mp3'; // Ajustado o caminho para o som
 
-function ChatScreen() {
+// Estilos
+import "../styles/Page.css";
+import "../styles/Auth.css";
+import "../styles/Chat.css";
+
+function Chat() { // Assumindo que o nome do seu componente é Chat
   const [messageText, setMessageText] = useState('');
-  const [messages, setMessages] = useState([]); // Estado para armazenar as mensagens do chat
+  const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const { currentUser } = useAuth();
 
-  // --- Função para ENVIAR Mensagens ---
+  // Referência para o elemento de áudio
+  const audioRef = useRef(new Audio(notificationSound));
+
   const handleSendMessage = async () => {
     if (messageText.trim() === '' || !currentUser) {
       alert('Por favor, digite uma mensagem e certifique-se de estar logado.');
       return;
     }
-
     setSending(true);
-
     try {
       await addDoc(collection(db, "chats", "general_chat", "messages"), {
         text: messageText,
         senderId: currentUser.uid,
         senderName: currentUser.displayName || 'Usuário Anônimo',
-        timestamp: serverTimestamp(), // Garante que o timestamp é do servidor
+        timestamp: serverTimestamp(),
       });
-
       setMessageText('');
       console.log('Mensagem enviada com sucesso!');
-
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
       alert('Erro ao enviar mensagem. Tente novamente.');
@@ -47,41 +48,53 @@ function ChatScreen() {
     }
   };
 
-  // --- Efeito para LER Mensagens em Tempo Real ---
+  // Efeito para LER Mensagens em Tempo Real E TOCAR SOM
   useEffect(() => {
-    // 1. Crie uma query para a coleção de mensagens, ordenando por timestamp descendente
-    // Isso garante que as mensagens mais recentes vêm primeiro
     const messagesQuery = query(
       collection(db, "chats", "general_chat", "messages"),
-      orderBy("timestamp", "desc") // Ordene do mais novo para o mais antigo
+      orderBy("timestamp", "desc")
     );
 
-    // 2. Configure um listener em tempo real (onSnapshot)
     const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
+      let newMessagesReceived = false;
       const loadedMessages = querySnapshot.docs.map(doc => ({
-        id: doc.id, // O ID do documento é importante para a key da lista
-        ...doc.data(), // Todos os outros dados (text, senderId, senderName, timestamp)
+        id: doc.id,
+        ...doc.data(),
       }));
+
+      // Verifica se houve novas mensagens de outros usuários
+      querySnapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          // Se for uma mensagem adicionada E não for do usuário atual, marcamos para tocar o som
+          const newMessageSenderId = change.doc.data().senderId;
+          if (currentUser && newMessageSenderId !== currentUser.uid) {
+            newMessagesReceived = true;
+          }
+        }
+      });
+
       setMessages(loadedMessages);
+
+      if (newMessagesReceived) {
+        // Tenta tocar o som. O navegador pode bloquear o autoplay sem interação prévia.
+        audioRef.current.play().catch(error => {
+          console.log("Erro ao tocar o som (política de autoplay?):", error);
+        });
+      }
     }, (error) => {
       console.error("Erro ao carregar mensagens:", error);
     });
 
-    // 3. Retorne a função de unsubscribe para parar de ouvir quando o componente for desmontado
     return () => unsubscribe();
-  }, []); // A dependência vazia [] garante que este efeito roda apenas uma vez (ao montar)
+  }, [currentUser]); // currentUser na dependência para reconfigurar o listener se o usuário mudar
 
-  // --- Função para renderizar cada item da FlatList (ou div neste caso) ---
-  // Usamos useCallback para otimização, já que esta função é passada como prop
+  // Função para renderizar cada bolha de mensagem
   const renderMessage = useCallback(({ message }) => {
-    // Verifica se a mensagem foi enviada pelo usuário atual
     const isMyMessage = currentUser && message.senderId === currentUser.uid;
-
     return (
       <div className={`message-bubble ${isMyMessage ? 'my-message' : 'other-message'}`}>
         <p className="message-sender-name">{message.senderName}</p>
         <p className="message-text">{message.text}</p>
-        {/* Opcional: exiba o timestamp formatado */}
         {message.timestamp && (
           <span className="message-timestamp">
             {new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -89,26 +102,22 @@ function ChatScreen() {
         )}
       </div>
     );
-  }, [currentUser]); // Recalcule se o currentUser mudar
+  }, [currentUser]);
 
   return (
     <>
       <Header />
 
-      <section className="Main"> {/* Reutilizando a classe Main da sua Home */}
-        <div className="totalContainer chat-container-wrapper"> {/* Container como os de Auth */}
+      <section className="Main">
+        <div className="totalContainer chat-container-wrapper">
           <h2>Chat Coletivo</h2>
 
-          {/* Área de exibição das mensagens */}
           <div className="messages-display-area">
             {messages.length === 0 ? (
               <p className="no-messages-text">Nenhuma mensagem ainda. Seja o primeiro a enviar!</p>
             ) : (
-              // Usamos um div com overflow para simular a FlatList (já que é React web)
-              // Em React Native, seria uma FlatList de verdade aqui.
               <div className="messages-list-scrollable">
-                {/* As mensagens são renderizadas em ordem inversa para parecer um chat (mais novas embaixo) */}
-                {[...messages].reverse().map((msg) => (
+                {[...messages].reverse().map((msg) => ( // Reverse para exibir as mais novas embaixo
                   <div key={msg.id}>
                     {renderMessage({ message: msg })}
                   </div>
@@ -117,8 +126,7 @@ function ChatScreen() {
             )}
           </div>
 
-          {/* Área de input da mensagem */}
-          <div className="message-input-area accountAlready"> {/* Reutilizando accountAlready para estilo de container */}
+          <div className="message-input-area accountAlready">
             <textarea
               className="message-input"
               placeholder="Digite sua mensagem..."
@@ -127,7 +135,7 @@ function ChatScreen() {
               rows="3"
             ></textarea>
             <button
-              className="LoginButton Register" // Reutilizando classes de botão
+              className="LoginButton Register"
               onClick={handleSendMessage}
               disabled={sending}
             >
@@ -142,4 +150,4 @@ function ChatScreen() {
   );
 }
 
-export default ChatScreen;
+export default Chat; // Certifique-se que o nome do componente é Chat
