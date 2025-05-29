@@ -62,7 +62,7 @@ article {
   p {
     color: aliceblue;
   }
-  h3 {
+  h3, h1 {
     color: aliceblue;
     max-width: 90vw;
   }

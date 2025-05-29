@@ -70,7 +70,7 @@ function Drivers() {
         {!currentUser ? ( // Se não houver usuário logado
           <div className="LoginMessage Block">
             <div>
-              <h1 className="title">Drivers - F1 </h1>
+              <h1>Drivers - F1 </h1>
               <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
             </div>
             <div className="buttons">
