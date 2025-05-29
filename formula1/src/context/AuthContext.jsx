@@ -8,12 +8,14 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  deleteUser, // <-- IMPORTANT: deleteUser imported
+  deleteUser,
   updateProfile
 } from 'firebase/auth';
-// REMOVED/COMMENTED OUT: Firestore imports if you are NOT using Firestore
-// import { doc, deleteDoc } from 'firebase/firestore';
-import { auth } from '../firebase/firebaseConfig'; // Ensure 'auth' is imported correctly
+// REMOVED/COMMENTED OUT: Firestore imports if not in use
+import { auth } from '../firebase/firebaseConfig';
+
+// --- NEW: Import emailjs-com for client-side email sending ---
+import emailjs from 'emailjs-com';
 
 const AuthContext = createContext();
 
@@ -22,6 +24,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
+
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,24 +36,41 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  const signup = async (email, password, name, imageFile) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const profileUpdates = { displayName: name };
-      // If you're handling imageFile for photoURL, ensure logic is here and Firebase Storage is set up
-      await updateProfile(user, profileUpdates);
-      return userCredential;
-    } catch (error) {
-      throw error;
-    }
-  };
+  // --- Corrected signup function: Removed outer useless try/catch ---
+const signup = async (email, password, name) => {
+    console.log("signup() function was called with:", email, name); // <--- ADD THIS
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+
+  await updateProfile(user, { displayName: name });
+
+  console.log("Attempting to send email for:", email);
+  console.log("Recipient Name:", name);
+
+  // Use email and name directly (not from state)
+  emailjs.send(
+    "service_vasotur",
+    "template_yr8rrqi",
+    { email, name },
+    "AEf0rLomnd13Rvmw6"
+  ).then(() => {
+    console.log("Email enviado com Sucesso!");
+    localStorage.setItem("statusEmail", false)
+  }).catch((err) => {
+    console.error(err);
+    console.log("Erro ao enviar o email. Tente novamente mais tarde.");
+  });
+
+  return userCredential;
+};
 
   const login = (email, password) => {
+        localStorage.setItem("statusEmail", false)
     return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {
+        localStorage.setItem("statusEmail", true)
     return signOut(auth);
   };
 
@@ -59,27 +79,23 @@ export function AuthProvider({ children }) {
     return signInWithPopup(auth, provider);
   };
 
-  // --- THIS IS THE KEY FUNCTION FOR DELETING THE ACCOUNT ---
+  // --- Corrected deleteAccount function: Removed outer useless try/catch ---
   const deleteAccount = async () => {
     if (!currentUser) {
+      // This is a valid throw, no try/catch needed around it
       throw new Error("No user is logged in to delete.");
     }
 
-    try {
-      // If you ARE using Firestore for user data, UNCOMMENT AND ADJUST THIS BLOCK:
-      /*
-      // Delete user document from Firestore (if applicable)
-      if (db) { // Ensure 'db' is imported from firebaseConfig if used
-        const userDocRef = doc(db, "users", currentUser.uid);
-        await deleteDoc(userDocRef);
-        console.log("User document deleted from Firestore.");
-      }
-      */
+    try { // <-- This try/catch is useful because it processes the specific 'auth/requires-recent-login' error
+      // REMOVED/COMMENTED OUT: Firestore document deletion logic if not in use
+      // if (db) { ... }
 
-      // Delete user from Firebase Authentication
       await deleteUser(currentUser);
+          localStorage.setItem("statusEmail", true)
       console.log("Firebase Auth user deleted.");
     } catch (error) {
+      // This catch block is NOT useless because it specifically handles
+      // the 'auth/requires-recent-login' error and re-throws others.
       if (error.code === 'auth/requires-recent-login') {
         throw new Error("Please re-authenticate to delete your account. Log out and log back in, then try again.");
       }
@@ -93,7 +109,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     loginWithGoogle,
-    deleteAccount // <-- Make sure it's included here
+    deleteAccount
   };
 
   return (

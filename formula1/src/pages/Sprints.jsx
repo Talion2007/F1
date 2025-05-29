@@ -5,6 +5,10 @@ import { useState, useEffect } from "react";
 import "../styles/Page.css"
 
 function Sprints() {
+    useEffect(() => {
+        document.title = "Sprints & Races";
+    })
+
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -34,6 +38,8 @@ function Sprints() {
         fetchUsers()
     }, [year]);
 
+    console.log(error)
+
     const sprintSession = users.filter((user) => user.session_name === 'Sprint');
     const raceSession = users.filter((user) => user.session_name === 'Race');
 
@@ -43,24 +49,23 @@ function Sprints() {
 
     return (
         <>
-
             <Header />
             <section>
 
-            <div className="container">
-                <h1 className="title">Sprints - F1 {year}</h1>
+                <div className="container">
+                    <h1 className="title">Sprints - F1 {year}</h1>
 
-                                    <select value={year} onChange={(e) => setYear(e.target.value)}>
-                            <option>2025</option>
-                            <option>2024</option>
-                            <option>2023</option>
-                          </select>
-                    </div>
-
+                    <select value={year} onChange={(e) => setYear(e.target.value)}>
+                        <option>2025</option>
+                        <option>2024</option>
+                        <option>2023</option>
+                    </select>
+                </div>
+                {error && <p className="error">Error: {error}</p>}
                 <article>
 
                     {loading ?
-                        <Loading/> :
+                        <Loading /> :
                         <>{sprintSession.map((user) => (
                             <div key={user.circuit_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
@@ -94,7 +99,7 @@ function Sprints() {
                 <article>
 
                     {loading ?
-                         <Loading/> :
+                        <Loading /> :
                         <>{raceSession.map((user) => (
                             <div key={user.circuit_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>

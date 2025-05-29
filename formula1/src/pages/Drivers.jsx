@@ -6,6 +6,10 @@ import "../styles/Page.css";
 import "../styles/Drivers.css"
 
 function Drivers() {
+  useEffect(() => {
+    document.title = "Drivers";
+  })
+
   const [users, setUsers] = useState(() => {
     const saveUsers = localStorage.getItem("User Key");
     return saveUsers ? JSON.parse(saveUsers) : [];
@@ -50,6 +54,8 @@ function Drivers() {
     fetchUsers();
   }, [sessionKey]);
 
+  console.log(error)
+
   useEffect(() => {
     localStorage.setItem("Pilots Year Key", JSON.stringify(sessionKey));
   }, [sessionKey]);
@@ -70,6 +76,7 @@ function Drivers() {
             ))}
           </select>
         </div>
+        {error && <p className="error">Error: {error}</p>}
         <article>
           {loading ? (
             <Loading />

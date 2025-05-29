@@ -5,6 +5,10 @@ import { useState, useEffect } from "react";
 import "../styles/Page.css"
 
 function Pratices() {
+    useEffect(() => {
+        document.title = "Pratices";
+    })
+
     const [users, setUsers] = useState(() => {
         const saveUsers = localStorage.getItem('Pratice Key');
         return saveUsers ? JSON.parse(saveUsers) : [];
@@ -39,6 +43,8 @@ function Pratices() {
         fetchUsers()
     }, [year]);
 
+    console.log(error)
+
     const praticeOne = users.filter((user) => user.session_name === 'Practice 1');
     const praticeTwo = users.filter((user) => user.session_name === 'Practice 2');
     const praticeTri = users.filter((user) => user.session_name === 'Practice 3');
@@ -53,19 +59,20 @@ function Pratices() {
             <Header />
             <section>
 
-<div className="container">
-                <h1 className="title">Pratices 1 - F1 {year}</h1>
+                <div className="container">
+                    <h1 className="title">Pratices 1 - F1 {year}</h1>
 
-                                    <select value={year} onChange={(e) => setYear(e.target.value)}>
-                            <option>2025</option>
-                            <option>2024</option>
-                            <option>2023</option>
-                          </select>
-                    </div>
+                    <select value={year} onChange={(e) => setYear(e.target.value)}>
+                        <option>2025</option>
+                        <option>2024</option>
+                        <option>2023</option>
+                    </select>
+                </div>
+                {error && <p className="error">Error: {error}</p>}
                 <article>
 
                     {loading ?
-                         <Loading/> :
+                        <Loading /> :
                         <>{praticeOne.map((user) => (
                             <div key={user.session_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
@@ -98,7 +105,7 @@ function Pratices() {
                 <article>
 
                     {loading ?
-                         <Loading/> :
+                        <Loading /> :
                         <>{praticeTwo.map((user) => (
                             <div key={user.session_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
@@ -131,7 +138,7 @@ function Pratices() {
                 <article>
 
                     {loading ?
-                         <Loading/> :
+                        <Loading /> :
                         <>{praticeTri.map((user) => (
                             <div key={user.session_key} className="divRaces">
                                 <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>

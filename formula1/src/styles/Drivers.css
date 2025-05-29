@@ -35,7 +35,7 @@
   width: 100%;
   height: 100%;
   position: absolute;
-  border: antiquewhite 0.75em solid;
+  border: aliceblue 0.75em solid;
   border-radius: 2em;
   backface-visibility: hidden;
 }

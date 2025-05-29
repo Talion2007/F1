@@ -7,8 +7,11 @@ import { Link } from "react-router-dom";
 import "../styles/Page.css"
 
 function Qualifying() {
-    const { currentUser } = useAuth(); // Agora 'user' é 'currentUser' do contexto
+    useEffect(() => {
+        document.title = "Qualifying";
+    })
 
+    const { currentUser } = useAuth(); // Agora 'user' é 'currentUser' do contexto
     const [users, setUsers] = useState(() => {
         const saveUsers = localStorage.getItem('Qualify Key');
         return saveUsers ? JSON.parse(saveUsers) : [];
@@ -43,6 +46,8 @@ function Qualifying() {
         fetchUsers()
     }, [year]);
 
+    console.log(error)
+
     useEffect(() => {
         localStorage.setItem('Year Key', JSON.stringify(year));
     }, [year])
@@ -56,13 +61,13 @@ function Qualifying() {
                     <div className="LoginMessage Block">
                         <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
                         <div className="buttons">
-              <button className="LoginButton">
-                <Link to="/login">Login</Link>
-              </button>
-              <button className="LoginButton Register">
-                <Link to="/register">Register</Link>
-              </button>
-          </div>
+                            <button className="LoginButton">
+                                <Link to="/login">Login</Link>
+                            </button>
+                            <button className="LoginButton Register">
+                                <Link to="/register">Register</Link>
+                            </button>
+                        </div>
                     </div>
                 ) : ( // Se houver usuário logado
                     <>

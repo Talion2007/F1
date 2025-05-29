@@ -5,7 +5,10 @@ import "../styles/Email.css";
 function EmailForm() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [status, setStatus] = useState(true);
+  const [status, setStatus] = useState(() => {
+        const savedStatus = localStorage.getItem('statusEmail');
+        return savedStatus ? JSON.parse(savedStatus) : true;
+    })
 
   const sendEmail = (e) => {
     e.preventDefault();

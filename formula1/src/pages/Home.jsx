@@ -64,7 +64,7 @@ function Home() {
         // Provide specific feedback for re-authentication
         if (error.message.includes('re-authenticate')) {
           alert('Failed to delete account: ' + error.message + '\nPlease log out and log back in, then try again to delete your account.');
-          navigate('/auth'); // Redirect to login page to re-authenticate
+          navigate('/login'); // Redirect to login page to re-authenticate
         } else {
           alert('Error deleting account: ' + error.message);
         }

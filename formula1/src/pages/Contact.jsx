@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Email from "../components/Email"
@@ -5,6 +6,9 @@ import Me from "../assets/profile.jpeg"
 import "../styles/Page.css"
 
 function Contact() {
+  useEffect(() => {
+    document.title = "About Me";
+  })
   return (
     <>
       <Header />

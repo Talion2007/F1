@@ -40,10 +40,10 @@ article {
   padding-bottom: 2em;
 
   p {
-    color: antiquewhite;
+    color: aliceblue;
   }
-  h2 {
-    color: antiquewhite;
+  h3, h2 {
+    color: aliceblue;
   }
 }
 
@@ -60,10 +60,10 @@ article {
   padding-bottom: 1em;
 
   p {
-    color: antiquewhite;
+    color: aliceblue;
   }
   h3 {
-    color: antiquewhite;
+    color: aliceblue;
     max-width: 90vw;
   }
   .LoginButton {
@@ -103,7 +103,7 @@ article {
 }
 
 section {
-  color: antiquewhite;
+  color: aliceblue;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -126,7 +126,7 @@ section {
     background-position: center;
     background-color: #21212c;
     border-radius: 1em;
-    border: antiquewhite 0.75em solid;
+    border: aliceblue 0.75em solid;
     margin: 1em;
     text-align: center;
     box-shadow: #21212c 1.2em 1.2em 1.6em;
@@ -153,10 +153,10 @@ section {
   flex-wrap: wrap;
 
   select {
-    border: antiquewhite 0.25em solid;
+    border: aliceblue 0.25em solid;
     background-color: #21212c;
     border-radius: 1em;
-    color: antiquewhite;
+    color: aliceblue;
   }
 }
 
