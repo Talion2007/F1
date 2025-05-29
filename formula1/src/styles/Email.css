@@ -9,7 +9,7 @@
     width: 100%;
     max-width: 400px;
     padding: 1rem 1rem;
-    border: 2px solid #d3d3d3;
+    border: 2px solid aliceblue;
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
@@ -23,7 +23,7 @@
   .email-form button {
     padding: 0.75rem 2rem;
     background-color: #e10600; /* F1 Red */
-    color: white;
+    color: aliceblue;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
