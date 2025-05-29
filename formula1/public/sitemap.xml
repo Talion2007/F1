@@ -12,6 +12,12 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+    <url>
+    <loc>https://formula1-statistics.vercel.app/qualifying</loc>
+    <lastmod>2025-05-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <url>
     <loc>https://formula1-statistics.vercel.app/sprints</loc>
     <lastmod>2025-05-29</lastmod>
