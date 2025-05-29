@@ -4,63 +4,62 @@ import { useAuth } from '../../context/AuthContext'; // Ajuste o caminho conform
 import { Link } from 'react-router-dom';
 
 function ResetPassword() {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-  // Obtém a função de redefinição de senha do contexto de autenticação
-  const { resetPassword } = useAuth();
+    // Obtém a função de redefinição de senha do contexto de autenticação
+    const { resetPassword } = useAuth();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage(''); // Limpa mensagens anteriores de sucesso
-    setError('');   // Limpa mensagens anteriores de erro
-    setLoading(true); // Ativa o estado de carregamento
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage(''); // Limpa mensagens anteriores de sucesso
+        setError('');   // Limpa mensagens anteriores de erro
+        setLoading(true); // Ativa o estado de carregamento
 
-    try {
-      // Chama a função de redefinição de senha do AuthContext
-      await resetPassword(email);
-      setMessage('Se o e-mail for válido, um link de redefinição de senha foi enviado para ' + email + '. Por favor, verifique sua caixa de entrada (e spam!).');
-      setEmail(''); // Limpa o campo de e-mail após o envio bem-sucedido
-    } catch (err) {
-      console.error("Erro ao redefinir a senha:", err.message);
-      // Firebase, por segurança, não informa se o e-mail não existe.
-      // A mensagem abaixo é genérica para evitar enumeração de usuários.
-      setError('Ocorreu um erro ao enviar o link de redefinição. Por favor, verifique seu e-mail e tente novamente.');
-    } finally {
-      setLoading(false); // Desativa o estado de carregamento
-    }
-  };
+        try {
+            // Chama a função de redefinição de senha do AuthContext
+            await resetPassword(email);
+            setMessage('Verify your email for password reset link.');
+            setEmail(''); // Limpa o campo de e-mail após o envio bem-sucedido
+        } catch (err) {
+            console.error("Erro ao redefinir a senha:", err.message);
+            setError('Ocured an error, try again later!');
+        } finally {
+            setLoading(false); // Desativa o estado de carregamento
+        }
+    };
 
-  return (
-    <div className='totalContainer signin'> {/* Reutilizando classes de estilo */}
-      <h2>Redefinir Senha</h2>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="resetEmail">E-mail:</label>
-        <input
-          type="email"
-          id="resetEmail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          placeholder="Digite seu e-mail de cadastro"
-        />
+    return (
+        <div className='totalContainer Forgot'> {/* Reutilizando classes de estilo */}
+            <h2>Reset Password</h2>
+            <form onSubmit={handleSubmit}>
+                <label htmlFor="resetEmail">E-mail:</label>
+                <input
+                    type="email"
+                    id="resetEmail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Insert your email"
+                />
+                {message && <p style={{ color: 'green' }}>{message}</p>}
+                {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Enviando...' : 'Redefinir Senha'}
-        </button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Sending...' : 'Reset'}
+                </button>
 
-                <button>
-          <Link to="/login">Voltar para o Login</Link>
-        </button>
-      </form>
-
-      {/* Exibe mensagens de sucesso ou erro */}
-      {message && <p style={{ color: 'green'}}>{message}</p>}
-      {error && <p style={{ color: 'red'}}>{error}</p>}
-    </div>
-  );
+                <div className='accountAlready Register'>
+                    <h2>Remembered your password?</h2>
+                    <button type="button" className='backLoginPage'>
+                        <Link to="/login">Back to Login</Link>
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
 }
 
 export default ResetPassword;

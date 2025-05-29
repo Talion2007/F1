@@ -71,7 +71,7 @@ function SignIn() {
             fontSize: '0.9em'
           }}
         >
-          Esqueceu a senha?
+          Forgot your password?
         </Link>
       </div>
 
