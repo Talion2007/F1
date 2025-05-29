@@ -9,6 +9,7 @@ import Qualifying from './pages/Qualify';
 import Contact from './pages/Contact';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import ForgotPassword from './pages/Forgot.jsx';
 
 import './App.css';
 
@@ -26,6 +27,8 @@ function App() {
             <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot" element={<ForgotPassword />} />
+          
             <Route path="/drivers" element={<Drivers />} />
             <Route path="/sprints" element={<Sprints />} />
             <Route path="/pratices" element={<Pratices />} />

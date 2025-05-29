@@ -7,11 +7,13 @@ import {
   signOut,
   onAuthStateChanged,
   deleteUser,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail, // <-- IMPORTANTE: Adicionado para redefinição de senha
+  // GoogleAuthProvider,    // <-- Descomente se for usar login com Google
+  // signInWithPopup        // <-- Descomente se for usar login com Google
 } from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig';
 
-// --- NEW: Import emailjs-com for client-side email sending ---
 import emailjs from 'emailjs-com';
 
 const AuthContext = createContext();
@@ -21,7 +23,6 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,61 +34,67 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  // --- Corrected signup function: Removed outer useless try/catch ---
-const signup = async (email, password, name) => {
-    console.log("signup() function was called with:", email, name); // <--- ADD THIS
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+  const signup = async (email, password, name) => {
+    console.log("signup() function was called with:", email, name);
 
-  await updateProfile(user, { displayName: name });
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-  console.log("Attempting to send email for:", email);
-  console.log("Recipient Name:", name);
+    await updateProfile(user, { displayName: name });
 
-  // Use email and name directly (not from state)
-  emailjs.send(
-    "service_vasotur",
-    "template_yr8rrqi",
-    { email, name },
-    "AEf0rLomnd13Rvmw6"
-  ).then(() => {
-    console.log("Email enviado com Sucesso!");
-    localStorage.setItem("statusEmail", false)
-  }).catch((err) => {
-    console.error(err);
-    console.log("Erro ao enviar o email. Tente novamente mais tarde.");
-  });
+    console.log("Attempting to send welcome email for:", email);
+    console.log("Recipient Name for welcome email:", name);
 
-  return userCredential;
-};
+    // Use emailjs.send com .then()/.catch() para o email de boas-vindas
+    emailjs.send(
+      "service_vasotur",
+      "template_yr8rrqi", // Usando o seu novo template ID
+      { email, name },     // Usando 'email' e 'name' como chaves, como no seu último código
+      "AEf0rLomnd13Rvmw6"
+    ).then(() => {
+      console.log("Email de boas-vindas enviado com Sucesso!");
+      localStorage.setItem("statusEmail", "sent"); // Altere o valor para um string, ex: "sent"
+    }).catch((err) => {
+      console.error("Erro ao enviar o email de boas-vindas:", err);
+      // Não alteramos o 'statusEmail' para 'false' em caso de erro no envio do e-mail de boas-vindas
+      // pois o registro em si foi bem-sucedido.
+    });
+
+    localStorage.setItem("statusEmail", "registered"); // Indica que o registro foi feito
+    return userCredential;
+  };
 
   const login = (email, password) => {
-        localStorage.setItem("statusEmail", false)
+    localStorage.setItem("statusEmail", "loggedIn"); // Indica que o login foi feito
     return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {
-        localStorage.setItem("statusEmail", true)
+    localStorage.setItem("statusEmail", "loggedOut"); // Indica que o logout foi feito
     return signOut(auth);
   };
 
-  // --- Corrected deleteAccount function: Removed outer useless try/catch ---
+  // --- NOVA FUNÇÃO: redefinir a senha ---
+  const resetPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
+
+  // --- OPCIONAL: Login com Google ---
+  // const loginWithGoogle = () => {
+  //   const provider = new GoogleAuthProvider();
+  //   return signInWithPopup(auth, provider);
+  // };
+
   const deleteAccount = async () => {
     if (!currentUser) {
-      // This is a valid throw, no try/catch needed around it
       throw new Error("No user is logged in to delete.");
     }
 
-    try { // <-- This try/catch is useful because it processes the specific 'auth/requires-recent-login' error
-      // REMOVED/COMMENTED OUT: Firestore document deletion logic if not in use
-      // if (db) { ... }
-
+    try {
       await deleteUser(currentUser);
-          localStorage.setItem("statusEmail", true)
+      localStorage.setItem("statusEmail", "deleted"); // Indica que a conta foi deletada
       console.log("Firebase Auth user deleted.");
     } catch (error) {
-      // This catch block is NOT useless because it specifically handles
-      // the 'auth/requires-recent-login' error and re-throws others.
       if (error.code === 'auth/requires-recent-login') {
         throw new Error("Please re-authenticate to delete your account. Log out and log back in, then try again.");
       }
@@ -100,6 +107,8 @@ const signup = async (email, password, name) => {
     signup,
     login,
     logout,
+    resetPassword, // <-- IMPORTANTE: Exporte a função resetPassword
+    // loginWithGoogle, // <-- Descomente se for usar login com Google
     deleteAccount
   };
 
