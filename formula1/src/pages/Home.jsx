@@ -79,7 +79,7 @@ function Home() {
         </main>
 
         {!currentUser ? ( // Se não houver usuário logado
-            <div className="ContactUs">
+            <div className="LoginMessage">
               <h3>Login your Account or Register!</h3>
               {/*
                  IMPORTANTE: A lógica de formulário para login/registro
@@ -93,7 +93,7 @@ function Home() {
               </button>
             </div>
           ) : ( // Se houver usuário logado
-            <div className="ContactUs">
+            <div className="LoginMessage">
               <h3>Welcome, {currentUser.email}!</h3>
               <button onClick={handleLogout} className="LoginButton">
                 Logout
