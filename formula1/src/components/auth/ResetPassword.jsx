@@ -44,8 +44,8 @@ function ResetPassword() {
                     required
                     placeholder="Insert your email"
                 />
-                {message && <p style={{ color: 'green' }}>{message}</p>}
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+                {message && <p>{message}</p>}
+                {error && <p>{error}</p>}
 
                 <button type="submit" disabled={loading}>
                     {loading ? 'Sending...' : 'Reset'}
