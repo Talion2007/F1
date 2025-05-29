@@ -6,12 +6,9 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
   deleteUser,
   updateProfile
 } from 'firebase/auth';
-// REMOVED/COMMENTED OUT: Firestore imports if not in use
 import { auth } from '../firebase/firebaseConfig';
 
 // --- NEW: Import emailjs-com for client-side email sending ---
@@ -74,11 +71,6 @@ const signup = async (email, password, name) => {
     return signOut(auth);
   };
 
-  const loginWithGoogle = () => {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
-  };
-
   // --- Corrected deleteAccount function: Removed outer useless try/catch ---
   const deleteAccount = async () => {
     if (!currentUser) {
@@ -108,7 +100,6 @@ const signup = async (email, password, name) => {
     signup,
     login,
     logout,
-    loginWithGoogle,
     deleteAccount
   };
 

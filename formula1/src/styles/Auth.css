@@ -37,6 +37,7 @@
     padding: 2em;
     margin: 1em;
     background-color: whitesmoke;
+    min-width: 20em;
 
     form {
         display: flex;
@@ -82,6 +83,37 @@
     button {
         background-color: #28a745;
     }
+}
+.accountAlready{
+    margin-top: 2.5em;
+    border-top: #21212c solid 1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #28a745;
+
+    .ButtonAccountConfig{
+         padding: 0.5em 1em;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            background-color:#28a745 !important;
+    }
+    .ButtonAccountConfig.Register{
+        background-color: #007bff !important;
+    }
+
+    a {
+        text-decoration: none;
+        color: aliceblue;
+    }
+}
+
+.accountAlready.Register{
+    color: #007bff;
 }
 
 @media screen and (max-width: 1024px) {

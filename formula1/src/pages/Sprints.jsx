@@ -2,6 +2,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Loading from "../components/Loading";
 import { useState, useEffect } from "react";
+import { useAuth } from '../context/AuthContext.jsx'; // Certifique-se de usar .jsx
+import { Link } from "react-router-dom";
 import "../styles/Page.css"
 
 function Sprints() {
@@ -9,6 +11,7 @@ function Sprints() {
         document.title = "Sprints & Races";
     })
 
+    const { currentUser } = useAuth(); // Agora 'user' é 'currentUser' do contexto
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -51,82 +54,100 @@ function Sprints() {
         <>
             <Header />
             <section>
+                {!currentUser ? ( // Se não houver usuário logado
+                    <div className="LoginMessage Block">
+                        <div>
+                            <h1 className="title">Sprints - F1</h1>
+                            <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
+                        </div>
+                        <div className="buttons">
+                            <button className="LoginButton">
+                                <Link to="/login">Login</Link>
+                            </button>
+                            <button className="LoginButton Register">
+                                <Link to="/register">Register</Link>
+                            </button>
+                        </div>
+                    </div>
+                ) : ( // Se houver usuário logado
+                    <>
+                        <div className="container">
+                            <h1 className="title">Sprints - F1 {year}</h1>
 
-                <div className="container">
-                    <h1 className="title">Sprints - F1 {year}</h1>
+                            <select value={year} onChange={(e) => setYear(e.target.value)}>
+                                <option>2025</option>
+                                <option>2024</option>
+                                <option>2023</option>
+                            </select>
+                        </div>
+                        {error && <p className="error">Error: {error}</p>}
+                        <article>
 
-                    <select value={year} onChange={(e) => setYear(e.target.value)}>
-                        <option>2025</option>
-                        <option>2024</option>
-                        <option>2023</option>
-                    </select>
-                </div>
-                {error && <p className="error">Error: {error}</p>}
-                <article>
+                            {loading ?
+                                <Loading /> :
+                                <>{sprintSession.map((user) => (
+                                    <div key={user.circuit_key} className="divRaces">
+                                        <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
+                                        <p>Country: {user.country_name}({user.country_code}) </p>
+                                        <p>
+                                            {new Date(user.date_start).toLocaleString('en-US', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                                hour12: false,
+                                            })} - {new Date(user.date_end).toLocaleString('en-US', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                                hour12: false,
+                                            })}
+                                        </p>
+                                    </div>
+                                ))}</>}
 
-                    {loading ?
-                        <Loading /> :
-                        <>{sprintSession.map((user) => (
-                            <div key={user.circuit_key} className="divRaces">
-                                <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
-                                <p>Country: {user.country_name}({user.country_code}) </p>
-                                <p>
-                                    {new Date(user.date_start).toLocaleString('en-US', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit',
-                                        hour12: false,
-                                    })} - {new Date(user.date_end).toLocaleString('en-US', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit',
-                                        hour12: false,
-                                    })}
-                                </p>
-                            </div>
-                        ))}</>}
+                        </article>
 
-                </article>
+                        <h1 className="title">Races - F1 {year}</h1>
 
-                <h1 className="title">Races - F1 {year}</h1>
+                        <article>
 
-                <article>
+                            {loading ?
+                                <Loading /> :
+                                <>{raceSession.map((user) => (
+                                    <div key={user.circuit_key} className="divRaces">
+                                        <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
+                                        <p>Country: {user.country_name}({user.country_code}) </p>
+                                        <p>
+                                            {new Date(user.date_start).toLocaleString('en-US', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                                hour12: false,
+                                            })} - {new Date(user.date_end).toLocaleString('en-US', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                                hour12: false,
+                                            })}
+                                        </p>
+                                    </div>
+                                ))}</>}
 
-                    {loading ?
-                        <Loading /> :
-                        <>{raceSession.map((user) => (
-                            <div key={user.circuit_key} className="divRaces">
-                                <p>City: {user.location} - Circuit: {user.circuit_short_name} - <strong>{user.session_name}</strong></p>
-                                <p>Country: {user.country_name}({user.country_code}) </p>
-                                <p>
-                                    {new Date(user.date_start).toLocaleString('en-US', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit',
-                                        hour12: false,
-                                    })} - {new Date(user.date_end).toLocaleString('en-US', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit',
-                                        hour12: false,
-                                    })}
-                                </p>
-                            </div>
-                        ))}</>}
-
-                </article>
+                        </article>
+                    </>
+                )}
             </section>
 
 

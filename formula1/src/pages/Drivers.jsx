@@ -2,6 +2,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Loading from "../components/Loading";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from '../context/AuthContext.jsx'; // Certifique-se de usar .jsx
 import "../styles/Page.css";
 import "../styles/Drivers.css"
 
@@ -9,6 +11,8 @@ function Drivers() {
   useEffect(() => {
     document.title = "Drivers";
   })
+
+  const { currentUser } = useAuth(); // Agora 'user' é 'currentUser' do contexto
 
   const [users, setUsers] = useState(() => {
     const saveUsers = localStorage.getItem("User Key");
@@ -63,77 +67,96 @@ function Drivers() {
     <>
       <Header />
       <section>
-        <div className="container">
-          <h1 className="title">Drivers - F1 </h1>
-          <select
-            value={sessionKey}
-            onChange={(e) => setSessionKey(e.target.value)}
-          >
-            {races.map((race) => (
-              <option key={race.session_key} value={race.session_key}>
-                {race.circuit_short_name} - {race.year}
-              </option>
-            ))}
-          </select>
-        </div>
-        {error && <p className="error">Error: {error}</p>}
-        <article>
-          {loading ? (
-            <Loading />
-          ) : (
-            <>
-              {users.map((user) => (
-                <div
-                  className="Card"
-                  key={user.driver_number}
-                  onClick={() =>
-                    setFlippedCard(
-                      flippedCard === user.driver_number ? null : user.driver_number
-                    )
-                  }
-                >
-                  <div
-                    className={`CardInner ${flippedCard === user.driver_number ? "is-flipped" : ""}`}
-                  >
+        {!currentUser ? ( // Se não houver usuário logado
+          <div className="LoginMessage Block">
+            <div>
+              <h1 className="title">Drivers - F1 </h1>
+              <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
+            </div>
+            <div className="buttons">
+              <button className="LoginButton">
+                <Link to="/login">Login</Link>
+              </button>
+              <button className="LoginButton Register">
+                <Link to="/register">Register</Link>
+              </button>
+            </div>
+          </div>
+        ) : ( // Se houver usuário logado
+          <>
+            <div className="container">
+              <h1 className="title">Drivers - F1 </h1>
+              <select
+                value={sessionKey}
+                onChange={(e) => setSessionKey(e.target.value)}
+              >
+                {races.map((race) => (
+                  <option key={race.session_key} value={race.session_key}>
+                    {race.circuit_short_name} - {race.year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {error && <p className="error">Error: {error}</p>}
+            <article>
+              {loading ? (
+                <Loading />
+              ) : (
+                <>
+                  {users.map((user) => (
                     <div
-                      className="CardDriverFront"
-                      style={{ backgroundColor: "#" + user.team_colour }}
+                      className="Card"
+                      key={user.driver_number}
+                      onClick={() =>
+                        setFlippedCard(
+                          flippedCard === user.driver_number ? null : user.driver_number
+                        )
+                      }
                     >
-                      <div className="BlockOne">
-                        <h1 style={{ color: "#" + user.team_colour }}>
-                          {user.driver_number.toLocaleString(`en-US`, {
-                            minimumIntegerDigits: 2,
-                          })}
-                        </h1>
-                        <img src={user.headshot_url} alt={`${user.full_name}'s portrait`} />
-                      </div>
-                      <div className="BlockTwo">
-                        <h3>
-                          {user.full_name} ({user.name_acronym})
-                        </h3>
-                        <h4>
-                          {user.country_code || "UNK"} - {user.team_name}
-                        </h4>
-                      </div>
-                    </div>
+                      <div
+                        className={`CardInner ${flippedCard === user.driver_number ? "is-flipped" : ""}`}
+                      >
+                        <div
+                          className="CardDriverFront"
+                          style={{ backgroundColor: "#" + user.team_colour }}
+                        >
+                          <div className="BlockOne">
+                            <h1 style={{ color: "#" + user.team_colour }}>
+                              {user.driver_number.toLocaleString(`en-US`, {
+                                minimumIntegerDigits: 2,
+                              })}
+                            </h1>
+                            <img src={user.headshot_url} alt={`${user.full_name}'s portrait`} />
+                          </div>
+                          <div className="BlockTwo">
+                            <h3>
+                              {user.full_name} ({user.name_acronym})
+                            </h3>
+                            <h4>
+                              {user.country_code || "UNK"} - {user.team_name}
+                            </h4>
+                          </div>
+                        </div>
 
-                    <div
-                      className="CardDriverBack"
-                      style={{ backgroundColor: "#" + user.team_colour }}
-                    >
-                      <h3>Driver Number: {user.driver_number}</h3>
-                      <h3>Full Name: {user.full_name}</h3>
-                      <h3>Broadcast Name: {user.broadcast_name}</h3>
-                      <h3>Name Acronym: {user.name_acronym}</h3>
-                      <h3>Country Code: {user.country_code || "Unknown"}</h3>
-                      <h3>Team Name: {user.team_name}</h3>
+                        <div
+                          className="CardDriverBack"
+                          style={{ backgroundColor: "#" + user.team_colour }}
+                        >
+                          <h3>Driver Number: {user.driver_number}</h3>
+                          <h3>Full Name: {user.full_name}</h3>
+                          <h3>Broadcast Name: {user.broadcast_name}</h3>
+                          <h3>Name Acronym: {user.name_acronym}</h3>
+                          <h3>Country Code: {user.country_code || "Unknown"}</h3>
+                          <h3>Team Name: {user.team_name}</h3>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-        </article>
+                  ))}
+                </>
+              )}
+            </article>
+          </>
+        )}
       </section>
       <Footer />
     </>

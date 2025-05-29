@@ -59,7 +59,10 @@ function Qualifying() {
             <section>
                 {!currentUser ? ( // Se não houver usuário logado
                     <div className="LoginMessage Block">
-                        <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
+                        <div>
+                            <h1 className="title">Qualifying - F1</h1>
+                            <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
+                        </div>
                         <div className="buttons">
                             <button className="LoginButton">
                                 <Link to="/login">Login</Link>

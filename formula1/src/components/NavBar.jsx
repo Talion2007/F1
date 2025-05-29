@@ -33,32 +33,32 @@ function NavBar() {
                     </svg>
 
                 </label> <ul id="options">
-                    <li>
-                        <Link to="/">
-                            <h3>Home</h3>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/drivers">
-                            <h3>Drivers</h3>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/sprints">
-                            <h3>Sprints & Races</h3>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/pratices">
-                            <h3>Pratices</h3>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/qualifying">
-                            <h3>Qualifying</h3>
-                        </Link>
-                    </li>
-                    <li>
+                  <li>
+                    <Link to="/">
+                        <h3>Home</h3>
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/pratices">
+                        <h3>Pratices</h3>
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/qualifying">
+                        <h3>Qualifying</h3>
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/sprints">
+                        <h3>Sprints & Races</h3>
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/drivers">
+                        <h3>Drivers</h3>
+                    </Link>
+                </li>
+                <li>
                         <Link to="/contact">
                             <h3>About Me</h3>
                         </Link>
@@ -72,8 +72,13 @@ function NavBar() {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/drivers">
-                        <h3>Drivers</h3>
+                    <Link to="/pratices">
+                        <h3>Pratices</h3>
+                    </Link>
+                </li>
+                <li>
+                    <Link to="/qualifying">
+                        <h3>Qualifying</h3>
                     </Link>
                 </li>
                 <li>
@@ -82,13 +87,8 @@ function NavBar() {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/pratices">
-                        <h3>Pratices</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/qualifying">
-                        <h3>Qualifying</h3>
+                    <Link to="/drivers">
+                        <h3>Drivers</h3>
                     </Link>
                 </li>
                 <li>

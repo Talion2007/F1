@@ -1,4 +1,4 @@
-// src/components/auth/SignUp.jsx
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx'; // Caminho para o AuthContext
 import { useNavigate } from 'react-router-dom'; // Para redirecionar após o registro
@@ -90,6 +90,12 @@ function SignUp() {
           {loading ? 'Loading...' : 'Register'}
         </button>
       </form>
+            <div className='accountAlready Register'>
+        <h2>Already have an account?</h2>
+        <button className="ButtonAccountConfig Register">
+                <Link to="/login">Login</Link>
+              </button>
+      </div>
     </div>
   );
 }

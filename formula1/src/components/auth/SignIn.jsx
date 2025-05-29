@@ -1,5 +1,6 @@
 // src/components/auth/SignIn.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx'; // Caminho para o AuthContext
 import { useNavigate } from 'react-router-dom'; // Para redirecionar após o login
 
@@ -76,6 +77,12 @@ function SignIn() {
           {loading ? 'Loading...' : 'Login'}
         </button>
       </form>
+      <div className='accountAlready'>
+        <h2>Don't have an account?</h2>
+        <button className="ButtonAccountConfig">
+                <Link to="/register">Register</Link>
+              </button>
+      </div>
     </div>
   );
 }
