@@ -129,15 +129,17 @@
         width: 100%;
         margin: 0.5em 0;
     }
-}
-
-@media screen and (max-width: 1024px) {
-    .auth-page {
+     .auth-page {
         width: 100%;
+        height: 100%;
+        padding-bottom: 1em;
 }
 .totalContainer{
     background-color:#21212c;
     width: auto;
     height: auto;
+}
+.accountAlready{
+     border-top: aliceblue solid 1px;
 }
 }

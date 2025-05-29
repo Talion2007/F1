@@ -22,9 +22,9 @@ function SignUp() {
     try {
       // Primeiro, tente registrar o usuário, PASSANDO O NOME
       await signup(email, password, name); // <-- PASS 'name' HERE
-      
+
       // Se o registro for bem-sucedido, faça o login automático
-      await login(email, password); 
+      await login(email, password);
 
       alert('Cadastro realizado e login automático feito com sucesso!');
       navigate('/'); // Redireciona para a página inicial ou dashboard após o login
@@ -42,8 +42,8 @@ function SignUp() {
           break;
         case 'auth/user-not-found':
         case 'auth/wrong-password':
-            setError('Erro de autenticação após o registro. Tente fazer login manualmente.');
-            break;
+          setError('Erro de autenticação após o registro. Tente fazer login manualmente.');
+          break;
         default:
           setError('Ocorreu um erro. Tente novamente.');
       }
@@ -55,7 +55,7 @@ function SignUp() {
   return (
     <div className='totalContainer signup'>
       <h2>Register New Account</h2>
-      <form onSubmit={handleSignUp}> 
+      <form onSubmit={handleSignUp}>
         <label htmlFor="regName">Name:</label> {/* <-- ADD LABEL FOR NAME */}
         <input
           type="text"
@@ -90,11 +90,11 @@ function SignUp() {
           {loading ? 'Loading...' : 'Register'}
         </button>
       </form>
-            <div className='accountAlready Register'>
+      <div className='accountAlready Register'>
         <h2>Already have an account?</h2>
         <button className="ButtonAccountConfig Register">
-                <Link to="/login">Login</Link>
-              </button>
+          <Link to="/login">Login</Link>
+        </button>
       </div>
     </div>
   );
