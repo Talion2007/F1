@@ -64,6 +64,7 @@ article {
   }
   h3 {
     color: antiquewhite;
+    max-width: 90vw;
   }
   .LoginButton{
     background-color: #007bff;
