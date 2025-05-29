@@ -247,6 +247,11 @@ main {
       height: 55vh;
     }
   }
+
+  .LoginMessage.Block{
+    min-height: 40vh;
+    margin: 2.5em;
+  }
 }
 
 @media screen and (max-width: 768px) {
