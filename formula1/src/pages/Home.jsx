@@ -8,6 +8,7 @@ import carrouselOne from "../assets/carrouselOne.jpg";
 import carrouselTwo from "../assets/carrouselTwo.jpg";
 import carrouselTri from "../assets/carrouselTri.webp";
 import "../styles/Page.css";
+import "../styles/Email.css"
 
 // IMPORTANTE: Remova todas as importações do 'firebase/auth' aqui.
 // import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
@@ -66,34 +67,6 @@ function Home() {
 
         <h1 className="title">Fórmula 1</h1>
 
-        {/* Seção de Autenticação - Agora usando currentUser do contexto */}
-        <div style={{ margin: '40px 0', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-          {!currentUser ? ( // Se não houver usuário logado
-            <div>
-              <h2>Acesse sua conta ou cadastre-se!</h2>
-              {/*
-                 IMPORTANTE: A lógica de formulário para login/registro
-                 será movida para componentes SignIn.jsx e SignUp.jsx
-                 e para novas rotas. Por enquanto, a parte de input
-                 de email/senha pode ser removida daqui.
-                 Vamos adicionar links para essas páginas em breve.
-              */}
-              <button>
-              <Link to="/auth">Cadastro</Link>
-              </button>
-            </div>
-          ) : ( // Se houver usuário logado
-            <div>
-              <h2>Bem-vindo, {currentUser.email}!</h2>
-              <p>Você está logado e pode explorar as funcionalidades exclusivas!</p>
-              <button onClick={handleLogout} style={{ margin: '10px 0', padding: '10px 15px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-                Sair
-              </button>
-            </div>
-          )}
-        </div>
-        {/* Fim da Seção de Autenticação */}
-
         <main>
           {/* Seu conteúdo de texto sobre Fórmula 1 */}
           <p>Formula 1 (F1) is the epitome of speed, precision, and strategy, where the world’s best drivers, engineers, and teams come together to compete at the highest level of motorsport. With a history spanning more than 70 years, F1 has evolved into a global spectacle watched by millions around the world, captivating audiences with its breathtaking speed, cutting-edge technology, and intense rivalries. The races take place on a wide variety of tracks, each offering unique challenges for both drivers and teams. From the famous and historical circuits like Monaco, Silverstone, and Spa-Francorchamps to newer additions like the Baku City Circuit and the Circuit of the Americas, Formula 1 offers a combination of tight, twisty city streets and high-speed, open circuits. The diversity of these tracks adds a rich layer of complexity to the sport, making it one of the most challenging and exciting motorsports in the world. At the core of F1 is the battle for two prestigious titles: the World Drivers' Championship and the Constructors' Championship, both of which represent the highest achievements in the sport, with every team and driver striving for glory in each of the 22–24 race weekends of the season.</p>
@@ -104,6 +77,29 @@ function Home() {
           <p>In addition to the technical and strategic aspects, Formula 1 also has a rich history, filled with historic moments, milestones, and record-breaking performances. Michael Schumacher set the standard for dominance with seven World Championships, while Sebastian Vettel’s four consecutive titles (2010-2013) were a period of unrivaled consistency. However, the sport is constantly evolving, and new records are set each season. Lewis Hamilton has become the most successful driver of the modern era, with 104 Grand Prix victories to his name as of 2025. He also shares the record for the most World Championships with Schumacher. In addition, the sport is seeing young stars like Max Verstappen and Charles Leclerc challenge the established order, signaling a bright future for F1. Verstappen, in particular, has been dominant in recent seasons, winning multiple World Championships and becoming one of the most talented and competitive drivers of his generation. With the advent of hybrid technology and the sport’s drive for sustainability, the future of Formula 1 is set to be as thrilling as its past, with new innovations on the horizon and exciting challenges ahead for the sport’s top teams and drivers.</p>
           <p>Formula 1 remains one of the most watched and celebrated sports in the world, a perfect blend of speed, technology, and human skill. It continues to evolve, bringing new fans and exciting developments while honoring its rich history and traditions. As the sport looks to the future, with sustainability efforts like carbon neutrality by 2030 and continued technological advancements, F1 will undoubtedly continue to capture the imagination of millions and deliver the thrilling action that has made it the crown jewel of motorsport.</p>
         </main>
+
+        {!currentUser ? ( // Se não houver usuário logado
+            <div className="ContactUs">
+              <h2>Login your Account or Register!</h2>
+              {/*
+                 IMPORTANTE: A lógica de formulário para login/registro
+                 será movida para componentes SignIn.jsx e SignUp.jsx
+                 e para novas rotas. Por enquanto, a parte de input
+                 de email/senha pode ser removida daqui.
+                 Vamos adicionar links para essas páginas em breve.
+              */}
+              <button className="LoginButton">
+              <Link to="/auth">Register</Link>
+              </button>
+            </div>
+          ) : ( // Se houver usuário logado
+            <div className="ContactUs">
+              <h2>Welcome, {currentUser.email}!</h2>
+              <button onClick={handleLogout} className="LoginButton">
+                Logout
+              </button>
+            </div>
+          )}
       </section>
 
       <Footer />

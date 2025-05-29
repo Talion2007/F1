@@ -45,6 +45,19 @@ article {
   h2 {
     color: antiquewhite;
   }
+  .LoginButton{
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 7.5em;
+
+    a {
+      color: white;
+      text-decoration: none;
+    }
+  }
 }
 
 section {
