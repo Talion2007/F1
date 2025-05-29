@@ -66,7 +66,7 @@ article {
     color: antiquewhite;
     max-width: 90vw;
   }
-  .LoginButton{
+  .LoginButton {
     background-color: #007bff;
     color: white;
     border: none;
@@ -79,10 +79,27 @@ article {
       text-decoration: none;
     }
   }
+
+  .LoginButton.Delete{
+    background-color: #e10600;
+    width: 10em;
+  }
+
+  .LoginButton.Register{
+    background-color: #28a745;
+  }
+
+  .buttons{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1em;
+  }
 }
 .LoginMessage.Block{
   min-height: 40vh;
-  margin: 7.5em;
+  margin: 5em;
 }
 
 section {
