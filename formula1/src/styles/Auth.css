@@ -4,142 +4,135 @@
   align-items: center;
   justify-content: center;
   min-height: 99vh;
+  max-width: 100vw;
 }
-.auth-container {
+
+.LoginButton,
+.RegisterButton {
+  padding: 1em;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 7.5em;
+}
+.RegisterButton {
+  background-color: #28a745;
+}
+.totalContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: #007bff solid 1px;
+  border-radius: 10px;
+  padding: 2em;
+  margin: 1em;
+  background-color: aliceblue;
+  min-width: 20em;
+
+  form {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
-    padding: 2em;
-    gap: 2em;
+
+    input {
+      margin: 0.5em;
+      padding: 0.5em;
+      border: 1px solid #007bff;
+      border-radius: 5px;
+      width: 200px;
+    }
+
+    button {
+      padding: 0.5em 1em;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 1em;
+    }
+
+    p {
+      margin-top: 1em;
+      color: red;
+      font-size: 14px;
+      width: 100%;
+    }
+  }
 }
-.LoginButton, .RegisterButton {
-    padding: 1em;
+
+.totalContainer.signin {
+  color: #007bff;
+  button {
     background-color: #007bff;
+  }
+}
+.totalContainer.signup {
+  color: #28a745;
+  button {
+    background-color: #28a745;
+  }
+}
+.accountAlready {
+  margin-top: 2.5em;
+  border-top: #21212c solid 1px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: #28a745;
+
+  .ButtonAccountConfig {
+    padding: 0.5em 1em;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    width: 7.5em;
-}
-.RegisterButton {
-  background-color: #28a745;
-}
-.totalContainer{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: #007bff solid 1px;
-    border-radius: 10px;
-    padding: 2em;
-    margin: 1em;
-    background-color: aliceblue;
-    min-width: 20em;
+    background-color: #28a745 !important;
+  }
+  .ButtonAccountConfig.Register {
+    background-color: #007bff !important;
+  }
 
-    form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-
-        input {
-            margin: 0.5em;
-            padding: 0.5em;
-            border: 1px solid #007bff;
-            border-radius: 5px;
-            width: 200px;
-        }
-
-        button {
-            padding: 0.5em 1em;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 1em;
-        }
-
-        p{
-            margin-top: 1em;
-            color: red;
-            font-size: 14px;
-            width: 100%;
-        }
-    }
+  a {
+    text-decoration: none;
+    color: aliceblue;
+  }
 }
 
-.totalContainer.signin {
-    color: #007bff;
-    button {
-        background-color: #007bff;
-    }
-}
-.totalContainer.signup {
-    color: #28a745;
-    button {
-        background-color: #28a745;
-    }
-}
-.accountAlready{
-    margin-top: 2.5em;
-    border-top: #21212c solid 1px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: #28a745;
-
-    .ButtonAccountConfig{
-         padding: 0.5em 1em;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            background-color:#28a745 !important;
-    }
-    .ButtonAccountConfig.Register{
-        background-color: #007bff !important;
-    }
-
-    a {
-        text-decoration: none;
-        color: aliceblue;
-    }
-}
-
-.accountAlready.Register{
-    color: #007bff;
+.accountAlready.Register {
+  color: #007bff;
 }
 
 @media screen and (max-width: 1024px) {
-    .auth-container {
-        flex-direction: column;
-        padding: 1em;
-        gap: 0.5em;
-        h1 {
-            color : #21212c;
-        }
+  .auth-container {
+    flex-direction: column;
+    padding: 1em;
+    gap: 0.5em;
+    max-width: 100vw;
+    h1 {
+      color: #21212c;
     }
-    .LoginButton, .RegisterButton {
-        width: 100%;
-        margin: 0.5em 0;
-    }
-     .auth-page {
-        width: 100%;
-        height: 100%;
-        padding-bottom: 1em;
-}
-.totalContainer{
-    background-color:#21212c;
+  }
+  .LoginButton,
+  .RegisterButton {
+    width: 100%;
+    margin: 0.5em 0;
+  }
+
+  .totalContainer {
+    background-color: #21212c;
     width: auto;
     height: auto;
-}
-.accountAlready{
-     border-top: aliceblue solid 1px;
-}
+        max-width: 100vw;
+  }
+  .accountAlready {
+    border-top: aliceblue solid 1px;
+  }
 }
