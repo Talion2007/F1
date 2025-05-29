@@ -10,6 +10,7 @@ import Contact from './pages/Contact';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import ForgotPassword from './pages/Forgot.jsx';
+import ChatScreen from './pages/Chat.jsx';
 
 import './App.css';
 
@@ -28,6 +29,7 @@ function App() {
                         <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot" element={<ForgotPassword />} />
+            <Route path="/chat" element={<ChatScreen />} />
           
             <Route path="/drivers" element={<Drivers />} />
             <Route path="/sprints" element={<Sprints />} />
