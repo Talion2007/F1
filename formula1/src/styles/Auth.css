@@ -31,7 +31,7 @@
   padding: 2em;
   margin: 1em;
   background-color: aliceblue;
-  min-width: 20em;
+          max-width: 100vw;
 
   form {
     display: flex;
@@ -130,7 +130,6 @@
     background-color: #21212c;
     width: auto;
     height: auto;
-        max-width: 100vw;
   }
   .accountAlready {
     border-top: aliceblue solid 1px;
