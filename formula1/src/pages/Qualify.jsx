@@ -2,9 +2,13 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Loading from "../components/Loading";
 import { useState, useEffect } from "react";
+import { useAuth } from '../context/AuthContext.jsx'; // Certifique-se de usar .jsx
+import { Link } from "react-router-dom";
 import "../styles/Page.css"
 
 function Qualifying() {
+     const { currentUser } = useAuth(); // Agora 'user' é 'currentUser' do contexto
+
     const [users, setUsers] = useState(() => {
         const saveUsers = localStorage.getItem('Qualify Key');
         return saveUsers ? JSON.parse(saveUsers) : [];
@@ -48,7 +52,22 @@ function Qualifying() {
 
             <Header />
             <section>
-
+            {!currentUser ? ( // Se não houver usuário logado
+            <div className="LoginMessage Block">
+              <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
+              {/*
+                 IMPORTANTE: A lógica de formulário para login/registro
+                 será movida para componentes SignIn.jsx e SignUp.jsx
+                 e para novas rotas. Por enquanto, a parte de input
+                 de email/senha pode ser removida daqui.
+                 Vamos adicionar links para essas páginas em breve.
+              */}
+              <button className="LoginButton">
+              <Link to="/auth">Register</Link>
+              </button>
+            </div>
+          ) : ( // Se houver usuário logado
+<>
 <div className="container">
                 <h1 className="title">Qualifying - F1 {year}</h1>
 
@@ -89,6 +108,8 @@ function Qualifying() {
                         ))}</>}
 
                 </article>
+                </>
+          )}
             </section>
 
 

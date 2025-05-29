@@ -80,6 +80,10 @@ article {
     }
   }
 }
+.LoginMessage.Block{
+  min-height: 40vh;
+  margin: 7.5em;
+}
 
 section {
   color: antiquewhite;

@@ -1,5 +1,6 @@
 // src/pages/Home.js
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from '../context/AuthContext.jsx'; // Certifique-se de usar .jsx
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -8,23 +9,9 @@ import carrouselOne from "../assets/carrouselOne.jpg";
 import carrouselTwo from "../assets/carrouselTwo.jpg";
 import carrouselTri from "../assets/carrouselTri.webp";
 import "../styles/Page.css";
-import "../styles/Email.css"
-
-// IMPORTANTE: Remova todas as importações do 'firebase/auth' aqui.
-// import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-// import { auth } from '../firebase/firebaseConfig'; // Remova ou comente esta linha
-
-// Importe o useAuth hook do seu AuthContext
-import { useAuth } from '../context/AuthContext.jsx'; // Certifique-se de usar .jsx
 
 function Home() {
   const [carrousel, setCarrousel] = useState(0);
-
-  // Remova os estados de email e password
-  // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
-
-  // Use o hook useAuth para obter o currentUser e as funções de autenticação
   const { currentUser, logout } = useAuth(); // Agora 'user' é 'currentUser' do contexto
 
   // Efeito para o carrossel de imagens (MANTENHA ESTE)
@@ -34,16 +21,6 @@ function Home() {
     }, 7500);
     return () => clearInterval(interval);
   }, []);
-
-  // Remova o useEffect de onAuthStateChanged (o AuthContext já faz isso)
-  // useEffect(() => { ... }, []);
-
-  // Remova as funções de autenticação (handleSignUp, handleSignIn, handleSignOut)
-  // handleSignUp = async () => { ... }
-  // handleSignIn = async () => { ... }
-  // handleSignOut = async () => { ... }
-
-  // Função para logout, chamando a função do contexto
   const handleLogout = async () => {
     try {
       await logout(); // Chama a função logout do contexto
