@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 // src/context/AuthContext.js
 import { createContext, useContext, useEffect, useState } from 'react';
 import {
@@ -8,12 +7,11 @@ import {
   onAuthStateChanged,
   deleteUser,
   updateProfile,
-  sendPasswordResetEmail, // <-- IMPORTANTE: Adicionado para redefinição de senha
-  // GoogleAuthProvider,    // <-- Descomente se for usar login com Google
-  // signInWithPopup        // <-- Descomente se for usar login com Google
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig';
-
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
 import emailjs from 'emailjs-com';
 
 const AuthContext = createContext();
@@ -34,47 +32,76 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  const isUsernameTaken = async (username) => {
+    const usernameLower = username.toLowerCase();
+    const userDocRef = doc(db, 'usernames', usernameLower);
+    const docSnap = await getDoc(userDocRef);
+    return docSnap.exists();
+  };
+
   const signup = async (email, password, name) => {
-    console.log("signup() function was called with:", email, name);
+    console.log("signup() function called with: Email =", email, "Name =", name); // Log inicial
+
+    const taken = await isUsernameTaken(name);
+    if (taken) {
+      const error = new Error('Nome de usuário já está em uso.');
+      error.code = 'auth/username-already-in-use';
+      throw error;
+    }
 
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    console.log("Firebase Auth user created/authenticated. UID:", user.uid); // Log após criação de usuário
+
     await updateProfile(user, { displayName: name });
 
+    const usernameLower = name.toLowerCase();
+    // Dados que serão enviados para o Firestore
+    const dataToFirestore = {
+      userId: user.uid,
+      name: name,
+      email: email
+    };
+
+    console.log("Attempting to save username to Firestore:"); // Log antes de salvar no Firestore
+    console.log("  Document ID (usernameLower):", usernameLower);
+    console.log("  Data object:", dataToFirestore); // Log do objeto de dados completo
+
+    await setDoc(doc(db, 'usernames', usernameLower), dataToFirestore);
+
+    console.log("Username saved to Firestore successfully!"); // Log de sucesso no Firestore
+
+    // Restante do seu código para enviar e-mail e localStorage
     console.log("Attempting to send welcome email for:", email);
     console.log("Recipient Name for welcome email:", name);
 
-    // Use emailjs.send com .then()/.catch() para o email de boas-vindas
     emailjs.send(
       "service_vasotur",
-      "template_yr8rrqi", // Usando o seu novo template ID
-      { email, name },     // Usando 'email' e 'name' como chaves, como no seu último código
+      "template_yr8rrqi",
+      { email, name },
       "AEf0rLomnd13Rvmw6"
     ).then(() => {
       console.log("Email de boas-vindas enviado com Sucesso!");
-      localStorage.setItem("statusEmail", "sent"); // Altere o valor para um string, ex: "sent"
+      localStorage.setItem("statusEmail", "sent");
     }).catch((err) => {
       console.error("Erro ao enviar o email de boas-vindas:", err);
-      // Não alteramos o 'statusEmail' para 'false' em caso de erro no envio do e-mail de boas-vindas
-      // pois o registro em si foi bem-sucedido.
     });
 
-    localStorage.setItem("statusEmail", "registered"); // Indica que o registro foi feito
+    localStorage.setItem("statusEmail", "registered");
     return userCredential;
   };
 
   const login = (email, password) => {
-    localStorage.setItem("statusEmail", "loggedIn"); // Indica que o login foi feito
+    localStorage.setItem("statusEmail", "loggedIn");
     return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {
-    localStorage.setItem("statusEmail", "loggedOut"); // Indica que o logout foi feito
+    localStorage.setItem("statusEmail", "loggedOut");
     return signOut(auth);
   };
 
-  // --- NOVA FUNÇÃO: redefinir a senha ---
   const resetPassword = (email) => {
     return sendPasswordResetEmail(auth, email);
   };
@@ -86,7 +113,7 @@ export function AuthProvider({ children }) {
 
     try {
       await deleteUser(currentUser);
-      localStorage.setItem("statusEmail", "deleted"); // Indica que a conta foi deletada
+      localStorage.setItem("statusEmail", "deleted");
       console.log("Firebase Auth user deleted.");
     } catch (error) {
       if (error.code === 'auth/requires-recent-login') {
@@ -101,9 +128,9 @@ export function AuthProvider({ children }) {
     signup,
     login,
     logout,
-    resetPassword, // <-- IMPORTANTE: Exporte a função resetPassword
-    // loginWithGoogle, // <-- Descomente se for usar login com Google
-    deleteAccount
+    resetPassword,
+    deleteAccount,
+    isUsernameTaken
   };
 
   return (
