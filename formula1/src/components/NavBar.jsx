@@ -33,70 +33,70 @@ function NavBar() {
                     </svg>
 
                 </label> <ul id="options">
-                  <li>
-                    <Link to="/">
-                        <h3>Home</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/pratices">
-                        <h3>Pratices</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/qualifying">
-                        <h3>Qualifying</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/sprints">
-                        <h3>Sprints & Races</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/drivers">
-                        <h3>Drivers</h3>
-                    </Link>
-                </li>
-                <li>
+                    <li>
+                        <Link to="/">
+                            <h3>Home</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/sprints&pratices">
+                            <h3>Sprints & Pratices</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/races&qualifying">
+                            <h3>Races & Qualifying</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/drivers">
+                            <h3>Drivers</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/chat">
+                            <h3>Chat</h3>
+                        </Link>
+                    </li>
+                    <li>
                         <Link to="/contact">
                             <h3>About Me</h3>
                         </Link>
                     </li>
-                </ul></> 
+                </ul></>
                 :
-                 <ul>
-                <li>
-                    <Link to="/">
-                        <h3>Home</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/pratices">
-                        <h3>Pratices</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/qualifying">
-                        <h3>Qualifying</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/sprints">
-                        <h3>Sprints & Races</h3>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/drivers">
-                        <h3>Drivers</h3>
-                    </Link>
-                </li>
-                <li>
+                <ul>
+                    <li>
+                        <Link to="/">
+                            <h3>Home</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/sprints&pratices">
+                            <h3>Sprints & Pratices</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/races&qualifying">
+                            <h3>Races & Qualifying</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/drivers">
+                            <h3>Drivers</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/chat">
+                            <h3>Chat</h3>
+                        </Link>
+                    </li>
+                    <li>
                         <Link to="/contact">
                             <h3>About Me</h3>
                         </Link>
                     </li>
-            </ul>}
+                </ul>}
 
         </nav>
     )

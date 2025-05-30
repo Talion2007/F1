@@ -3,9 +3,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from './pages/Home';
 import Drivers from './pages/Drivers';
-import Sprints from './pages/Sprints';
-import Pratices from './pages/Pratices';
-import Qualifying from './pages/Qualify';
+import Pratices from './pages/Sprints&Pratices.jsx';
+import Qualifying from './pages/Races&Qualify.jsx';
 import Contact from './pages/Contact';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -32,9 +31,8 @@ function App() {
             <Route path="/chat" element={<ChatScreen />} />
           
             <Route path="/drivers" element={<Drivers />} />
-            <Route path="/sprints" element={<Sprints />} />
-            <Route path="/pratices" element={<Pratices />} />
-            <Route path="/qualifying" element={<Qualifying />} />
+            <Route path="/sprints&pratices" element={<Pratices />} />
+            <Route path="/races&qualifying" element={<Qualifying />} />
             <Route path="/contact" element={<Contact />} />
           </Routes>
         </BrowserRouter>

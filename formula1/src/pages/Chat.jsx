@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from "../firebase/firebaseConfig"; // Ajustado o caminho
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from "../context/AuthContext"; // Ajustado o caminho
+import { Link } from "react-router-dom";
 
 import Header from "../components/Header"; // Ajustado o caminho
 import Footer from "../components/Footer"; // Ajustado o caminho
@@ -109,6 +110,23 @@ function Chat() { // Assumindo que o nome do seu componente é Chat
             <Header />
 
             <section className="Main">
+            {!currentUser ? ( // Se não houver usuário logado
+                    <div className="LoginMessage Block">
+                        <div>
+                            <h1 className="title">Chat - F1</h1>
+                            <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
+                        </div>
+                        <div className="buttons">
+                            <button className="LoginButton">
+                                <Link to="/login">Login</Link>
+                            </button>
+                            <button className="LoginButton Register">
+                                <Link to="/register">Register</Link>
+                            </button>
+                        </div>
+                    </div>
+                ) : ( //
+                    <>
                 <div className="container">
                     <h1 className="title">Chat</h1>
                 </div>
@@ -145,6 +163,7 @@ function Chat() { // Assumindo que o nome do seu componente é Chat
                         </button>
                     </div>
                 </article>
+                </> )}
             </section>
 
             <Footer />
