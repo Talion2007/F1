@@ -79,12 +79,6 @@ export function AuthProvider({ children }) {
     return sendPasswordResetEmail(auth, email);
   };
 
-  // --- OPCIONAL: Login com Google ---
-  // const loginWithGoogle = () => {
-  //   const provider = new GoogleAuthProvider();
-  //   return signInWithPopup(auth, provider);
-  // };
-
   const deleteAccount = async () => {
     if (!currentUser) {
       throw new Error("No user is logged in to delete.");
