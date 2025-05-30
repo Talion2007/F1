@@ -193,7 +193,7 @@ function Chat() {
                 {/* Botão de ocultar visível apenas para admin e se a mensagem não estiver oculta */}
                 {isAdmin && !isHidden && (
                     <button
-                        className="hide-message-button"
+                        className="LoginButton Register Admin"
                         onClick={() => handleHideMessage(message.id, message.senderEmail)}
                     >
                         Ocultar

@@ -133,6 +133,12 @@
     min-width: 90px; /* Garante que o botão não encolha demais */
 }
 
+.LoginButton.Register.Admin{
+    background-color: #555;
+    padding: 0.1em;
+    width: auto;
+}
+
 /* Responsividade básica para telas menores */
 @media (max-width: 768px) {
     .chat-container-wrapper {
