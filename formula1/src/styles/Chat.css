@@ -54,9 +54,9 @@
     color: white;
     margin-left: auto;
     border-bottom-right-radius: 5px; /* Detalhe do canto */
-    p {
+    /* p {
         max-width: 100%;
-    }
+    } */ /* Remova estas linhas se estiverem causando erro ou não forem SASS/SCSS */
 }
 
 .other-message {
@@ -65,10 +65,41 @@
     align-self: flex-start; /* Alinha mensagens de outros à esquerda */
     border: 1px solid #ddd;
     border-bottom-left-radius: 5px; /* Detalhe do canto */
-    p {
+    /* p {
         max-width: 100%;
-    }
+    } */ /* Remova estas linhas se estiverem causando erro ou não forem SASS/SCSS */
 }
+
+/* -------------------------------------- */
+/* NOVO: Estilos para Mensagens do Administrador */
+/* -------------------------------------- */
+.message-bubble.admin-message {
+    background-color: #8f86dd; /* Um verde escuro distintivo para admin */
+    color: white; /* Texto branco para contraste */
+    font-weight: bold; /* Texto em negrito */
+    /* Você pode ajustar o alinhamento como quiser. Exemplos: */
+    /* align-self: flex-start; */ /* Alinha à esquerda, como outras mensagens */
+    /* align-self: flex-end; */   /* Alinha à direita, como suas próprias mensagens */
+    align-self: center; /* Centraliza a mensagem do admin */
+    margin: 5px auto; /* Adiciona margem e ajuda a centralizar */
+    max-width: 80%; /* Pode ser um pouco mais largo para destacar */
+    border-radius: 10px; /* Bordas um pouco mais quadradas */
+    padding: 10px 15px; /* Ajusta o padding */
+}
+
+/* Opcional: Se a mensagem do admin for a SUA mensagem (você é o admin) */
+.message-bubble.my-message.admin-message {
+    background-color: #8f86dd; /* Um tom de verde ainda mais escuro para o admin logado */
+    align-self: flex-end; /* Se for sua mensagem, alinha à direita */
+}
+
+/* Opcional: Se a mensagem do admin for de OUTRO admin (e você não for o admin logado) */
+.message-bubble.other-message.admin-message {
+    background-color: #8f86dd; /* Um verde mais claro para admin que não é você */
+    align-self: flex-start; /* Alinha à esquerda */
+}
+
+/* -------------------------------------- */
 
 .message-sender-name {
     font-size: 0.8em;
@@ -80,6 +111,12 @@
 .other-message .message-sender-name {
     color: #555; /* Cor para o nome de outros */
 }
+
+/* Para garantir que o nome do admin tenha a cor correta */
+.admin-message .message-sender-name {
+    color: rgba(255, 255, 255, 0.9); /* Nome do admin em branco/claro */
+}
+
 
 .message-text {
     font-size: 1em;
