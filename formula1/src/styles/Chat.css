@@ -98,7 +98,7 @@
 
 /* Opcional: Se a mensagem do admin for a SUA mensagem (você é o admin) */
 .message-bubble.my-message.admin-message {
-    background-color: #8f86dd; /* Um tom de verde ainda mais escuro para o admin logado */
+    background-color: #584fa7; /* Um tom de verde ainda mais escuro para o admin logado */
     align-self: flex-end; /* Se for sua mensagem, alinha à direita */
 }
 
