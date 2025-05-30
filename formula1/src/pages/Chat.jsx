@@ -120,7 +120,7 @@ function Chat() {
                     <div className="LoginMessage Block">
                         <div>
                             <h1 className="title">Chat - F1</h1>
-                            <h3>Este conteúdo é restrito a Membros Registrados. Faça login ou registre uma conta para continuar!</h3>
+                            <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
                         </div>
                         <div className="buttons">
                             <button className="LoginButton">
@@ -140,7 +140,7 @@ function Chat() {
                         <article> {/* Conteúdo principal do chat */}
                             <div className="messages-display-area">
                                 {messages.length === 0 ? (
-                                    <p className="no-messages-text">Nenhuma mensagem ainda. Seja o primeiro a enviar!</p>
+                                    <p className="no-messages-text">Any message yet! Be the first to send!</p>
                                 ) : (
                                     <div className="messages-list-scrollable">
                                         {/* Inverte a ordem para que as mensagens mais recentes apareçam no final da área de rolagem */}
