@@ -3,9 +3,12 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Email from "../components/Email"
 import Me from "../assets/profile.jpeg"
+import { useAuth } from "../context/AuthContext"; // Importe useAuth
 import "../styles/Page.css"
 
 function Contact() {
+  const { currentUser } = useAuth(); // Obtenha o usuário logado
+  
   useEffect(() => {
     document.title = "About Me";
   })
@@ -27,8 +30,17 @@ function Contact() {
             I believe that growth comes from curiosity, consistency, and collaboration. I’m always looking to expand my horizons, take on new challenges, and contribute to projects that inspire, connect, and transform.</p>
         </div>
         <div className="ContactUs">
+        {!currentUser ? (
+          <>
           <h2 className="title">Contact Us</h2>
-          <Email />
+          <Email /> 
+          </>
+        ) : (
+          <>
+          <h2 className="title">Logged</h2>
+          <h3>Email sent successfully on your register!</h3>
+          </>
+        )}
         </div>
       </section>
 
