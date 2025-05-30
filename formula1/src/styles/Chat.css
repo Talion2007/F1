@@ -20,16 +20,19 @@
 }
 
 .messages-display-area {
-    flex-grow: 1; /* Faz com que esta área ocupe o espaço restante */
-    background-color: #21212c; /* Cor de fundo da área de mensagens */
+    flex-grow: 1;
+    background-color: #21212c;
     border-radius: 8px;
-    overflow-y: auto; /* Adiciona rolagem vertical se as mensagens excederem a altura */
+    overflow-y: auto;
     display: flex;
-    flex-direction: column-reverse; /* Mensagens mais recentes aparecem na parte inferior */
+    /* MUDANÇA: Para que as mensagens apareçam da mais antiga para a mais recente */
+    flex-direction: column;
 
     width: 100%;
     max-height: 50vh;
+    padding: 10px;
 }
+
 
 .no-messages-text {
     text-align: center;

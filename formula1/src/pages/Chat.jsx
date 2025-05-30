@@ -25,19 +25,17 @@ function Chat() {
     const [userEmail, setUserEmail] = useState(null);
     const [userDisplayName, setUserDisplayName] = useState('Usuário Anônimo');
 
-    // MUDANÇA: useEffect para garantir que o UID, EMAIL e nome do usuário sejam atualizados quando currentUser mudar
+    // useEffect para garantir que o UID, EMAIL e nome do usuário sejam atualizados quando currentUser mudar
     useEffect(() => {
         if (currentUser) {
             setUserUid(currentUser.uid);
             setUserEmail(currentUser.email);
             setUserDisplayName(currentUser.displayName || 'Usuário Anônimo');
-            // ADICIONADO PARA DEBUG:
             console.log("Chat.js: currentUser atualizado. Email:", currentUser.email, "UID:", currentUser.uid);
         } else {
             setUserUid(null);
             setUserEmail(null);
             setUserDisplayName('Usuário Anônimo');
-            // ADICIONADO PARA DEBUG:
             console.log("Chat.js: currentUser é NULO.");
         }
     }, [currentUser]);
@@ -48,21 +46,45 @@ function Chat() {
     const messagesEndRef = useRef(null);
     const isInitialLoad = useRef(true);
 
+    const playNotificationSound = useCallback(() => {
+        if (audioRef.current) {
+            audioRef.current.currentTime = 0; // Reinicia o áudio
+            audioRef.current.play().catch(error => {
+                console.warn("Não foi possível tocar o som da notificação. Motivo:", error.name, error.message);
+                console.warn("Isso geralmente acontece porque o usuário não interagiu com a página ainda (política de autoplay).");
+            });
+        }
+    }, []);
+
+    const unlockAudioContext = useCallback(() => {
+        if (audioRef.current && audioRef.current.paused) {
+            audioRef.current.volume = 0;
+            audioRef.current.play().then(() => {
+                audioRef.current.pause();
+                audioRef.current.volume = 1;
+                console.log("Contexto de áudio desbloqueado.");
+            }).catch(e => {
+                console.warn("Falha ao desbloquear o contexto de áudio (esperado se já desbloqueado ou sem interação prévia):", e.name);
+            });
+        }
+    }, []);
+
+
     const handleSendMessage = async () => {
-        // ADICIONADO PARA DEBUG:
         console.log("handleSendMessage chamado.");
         console.log("  messageText:", messageText);
         console.log("  currentUser (do AuthContext):", currentUser);
         console.log("  userEmail (estado local do Chat):", userEmail);
         console.log("  isAdmin:", isAdmin);
 
-        // Usa userEmail para garantir que o EMAIL está presente e atualizado
         if (messageText.trim() === '' || !userEmail) {
-            // ADICIONADO PARA DEBUG:
             console.warn("Bloqueando envio: Mensagem vazia ou userEmail ausente. userEmail:", userEmail);
             alert('Por favor, digite uma mensagem e certifique-se de estar logado.');
             return;
         }
+
+        unlockAudioContext();
+
         setSending(true);
 
         try {
@@ -76,7 +98,6 @@ function Chat() {
             setMessageText('');
             console.log('Mensagem enviada com sucesso!');
         } catch (error) {
-            // ADICIONADO PARA DEBUG:
             console.error("ERRO CRÍTICO ao enviar mensagem:", error);
             alert('Erro ao enviar mensagem. Tente novamente.');
         } finally {
@@ -85,23 +106,18 @@ function Chat() {
     };
 
     const handleHideMessage = async (messageId, messageSenderEmail) => {
-        // ADICIONADO PARA DEBUG:
         console.log("handleHideMessage chamado.");
         console.log("  isAdmin:", isAdmin);
         console.log("  messageId:", messageId);
         console.log("  messageSenderEmail:", messageSenderEmail);
 
         if (!isAdmin) {
-            // ADICIONADO PARA DEBUG:
             console.warn("Bloqueando ocultação: Usuário não é admin.");
             alert("Você não tem permissão para ocultar mensagens.");
             return;
         }
 
-        // Adiciona uma verificação extra para o admin não ocultar mensagens de outros admins (opcional)
-        // Isso impede que um admin oculte a mensagem de outro admin. Se quiser, remova ou ajuste.
         if (isAdmin && messageSenderEmail === ADMIN_EMAIL && userEmail !== ADMIN_EMAIL) {
-            // ADICIONADO PARA DEBUG:
             console.warn("Bloqueando ocultação: Admin tentando ocultar mensagem de outro admin.");
             alert("Administradores não podem ocultar mensagens de outros administradores.");
             return;
@@ -118,7 +134,6 @@ function Chat() {
                 });
                 console.log(`Mensagem ${messageId} ocultada pelo admin.`);
             } catch (error) {
-                // ADICIONADO PARA DEBUG:
                 console.error("ERRO CRÍTICO ao ocultar mensagem:", error);
                 alert("Não foi possível ocultar a mensagem. Verifique as regras do Firestore.");
             }
@@ -128,7 +143,7 @@ function Chat() {
     useEffect(() => {
         const messagesQuery = query(
             collection(db, "chats", "general_chat", "messages"),
-            orderBy("timestamp", "desc") // Ordena por timestamp para pegar as mais recentes
+            orderBy("timestamp", "asc") // Ordenar por timestamp de forma crescente (ascendente)
         );
 
         const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
@@ -139,51 +154,66 @@ function Chat() {
 
             let shouldPlaySound = false;
 
-            // Lógica para tocar som apenas para novas mensagens de outros usuários
+            console.log("onSnapshot disparado. isInitialLoad.current:", isInitialLoad.current);
+
             if (!isInitialLoad.current) {
                 querySnapshot.docChanges().forEach((change) => {
+                    console.log("Change type:", change.type, "Sender email:", change.doc.data().senderEmail, "Current user email:", currentUser?.email);
                     if (change.type === "added" && currentUser && change.doc.data().senderEmail !== currentUser.email) {
                         shouldPlaySound = true;
+                        console.log("NOTIFICAÇÃO DEVE TOCAR! Nova mensagem de outro usuário.");
                     }
                 });
             } else {
                 isInitialLoad.current = false;
+                console.log("Primeira carga do chat, não toca som.");
             }
 
             setMessages(loadedMessages);
 
             if (shouldPlaySound) {
-                audioRef.current.play().catch(error => {
-                    console.log("Erro ao tocar o som (política de autoplay do navegador?):", error);
-                });
+                playNotificationSound();
             }
 
             // Scroll para o final das mensagens
             if (messagesEndRef.current) {
-                // Pequeno delay para garantir que o DOM foi atualizado
                 setTimeout(() => {
                     messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
                 }, 100);
             }
 
         }, (error) => {
-            console.error("Erro ao carregar mensagens em tempo real:", error); // Adicionei detalhes
+            console.error("Erro ao carregar mensagens em tempo real:", error);
         });
 
-        // Cleanup function para desinscrever do listener do Firestore
         return () => {
             unsubscribe();
-            isInitialLoad.current = true; // Reseta para que a primeira carga sempre toque som no login/recarregamento
+            isInitialLoad.current = true;
         };
-    }, [currentUser]); // Dependência de currentUser para re-executar se o usuário mudar
+    }, [currentUser, playNotificationSound]);
 
-    const renderMessage = useCallback(({ message }) => {
+    // MUDANÇA: renderMessage agora recebe 'index' e 'allMessages'
+    const renderMessage = useCallback(({ message, index, allMessages }) => {
         const isMyMessage = currentUser && message.senderEmail === currentUser.email;
         const isHidden = message.hiddenByAdmin;
 
+        // Lógica para verificar se o nome do remetente deve ser exibido
+        const showSenderName = (() => {
+            // Se for a primeira mensagem, sempre mostra o nome
+            if (index === 0) {
+                return true;
+            }
+            // Obter a mensagem anterior
+            const prevMessage = allMessages[index - 1];
+            // Mostrar o nome se o remetente for diferente do remetente da mensagem anterior
+            return prevMessage && prevMessage.senderEmail !== message.senderEmail;
+        })();
+
+
         return (
             <div className={`message-bubble ${isMyMessage ? 'my-message' : 'other-message'}`}>
-                <p className="message-sender-name">{message.senderName}</p>
+                {/* Condicionalmente renderiza o nome do remetente */}
+                {showSenderName && <p className="message-sender-name">{message.senderName}</p>}
                 <p className="message-text">{isHidden ? '[Conteúdo removido pelo administrador]' : message.text}</p>
                 {message.timestamp && (
                     <span className="message-timestamp">
@@ -229,18 +259,16 @@ function Chat() {
                             <h1 className="title">Chat</h1>
                         </div>
                         <article>
-                            <div className="messages-display-area">
+                            <div className="messages-display-area" ref={messagesEndRef}>
                                 {messages.length === 0 ? (
                                     <p className="no-messages-text">Any message yet! Be the first to send!</p>
                                 ) : (
-                                    <div className="messages-list-scrollable" ref={messagesEndRef}>
-                                        {/* Exibe as mensagens na ordem correta (mais antigas em cima, mais recentes em baixo) */}
-                                        {[...messages].reverse().map((msg) => (
-                                            <div key={msg.id}>
-                                                {renderMessage({ message: msg })}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    // MUDANÇA: Passa 'index' e 'messages' para renderMessage
+                                    messages.map((msg, index) => (
+                                        <div key={msg.id}>
+                                            {renderMessage({ message: msg, index: index, allMessages: messages })}
+                                        </div>
+                                    ))
                                 )}
                             </div>
 
