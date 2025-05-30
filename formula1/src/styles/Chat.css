@@ -85,6 +85,11 @@
     max-width: 80%; /* Pode ser um pouco mais largo para destacar */
     border-radius: 10px; /* Bordas um pouco mais quadradas */
     padding: 10px 15px; /* Ajusta o padding */
+    border: none;
+
+    .message-timestamp {
+        color: rgba(255, 255, 255, 0.9); /* Nome do admin em branco/claro */
+    }
 }
 
 /* Opcional: Se a mensagem do admin for a SUA mensagem (você é o admin) */
