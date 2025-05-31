@@ -10,7 +10,7 @@ function SignIn() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth(); // Não precisa mais de 'resetPassword' aqui
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSignIn = async (e) => {
@@ -38,9 +38,9 @@ function SignIn() {
 
   return (
     <div className='totalContainer signin'>
-      <h2>Sign In (Login)</h2>
+      <h2>Entrar (Login)</h2> {/* Traduzido */}
       <form onSubmit={handleSignIn}>
-        <label htmlFor="loginEmail">E-mail:</label>
+        <label htmlFor="loginEmail">E-mail:</label> {/* Já estava em PT-BR */}
         <input
           type="email"
           id="loginEmail"
@@ -49,7 +49,7 @@ function SignIn() {
           required
         />
 
-        <label htmlFor="loginPassword">Password:</label>
+        <label htmlFor="loginPassword">Senha:</label> {/* Traduzido */}
         <input
           type="password"
           id="loginPassword"
@@ -59,10 +59,10 @@ function SignIn() {
         />
 
         <div style={{ marginTop: '15px' }}>
-        <Link 
-          to="/forgot" // <-- Rota para a nova página Forgot.jsx
-          style={{ 
-            color: '#007bff', 
+        <Link
+          to="/forgot"
+          style={{
+            color: '#007bff',
             textDecoration: 'underline',
             background: 'none',
             border: 'none',
@@ -71,7 +71,7 @@ function SignIn() {
             fontSize: '0.9em'
           }}
         >
-          Forgot your password?
+          Esqueceu sua senha? {/* Traduzido */}
         </Link>
       </div>
 
@@ -80,15 +80,31 @@ function SignIn() {
           type="submit"
           disabled={loading}
         >
-          {loading ? 'Loading...' : 'Login'}
+          {loading ? 'Carregando...' : 'Entrar'} {/* Traduzido */}
         </button>
       </form>
 
       <div className='accountAlready'>
-        <h2>Don't have an account?</h2>
+        <h2>Não tem uma conta?</h2> {/* Traduzido */}
         <button className="ButtonAccountConfig">
-          <Link to="/register">Register</Link>
+          <Link to="/register">Registrar</Link> {/* Traduzido */}
         </button>
+      </div>
+      <div style={{ marginTop: '15px' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#28a745',
+            textDecoration: 'underline',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '0',
+            fontSize: '0.9em'
+          }}
+        >
+          Voltar para Home!
+        </Link>
       </div>
     </div>
   );

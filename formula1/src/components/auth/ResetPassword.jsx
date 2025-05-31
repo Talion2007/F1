@@ -1,6 +1,6 @@
 // src/components/auth/ResetPassword.jsx
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext'; // Ajuste o caminho conforme necessário
+import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 function ResetPassword() {
@@ -9,31 +9,31 @@ function ResetPassword() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Obtém a função de redefinição de senha do contexto de autenticação
     const { resetPassword } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage(''); // Limpa mensagens anteriores de sucesso
-        setError('');   // Limpa mensagens anteriores de erro
-        setLoading(true); // Ativa o estado de carregamento
+        setMessage('');
+        setError('');
+        setLoading(true);
 
         try {
-            // Chama a função de redefinição de senha do AuthContext
             await resetPassword(email);
-            setMessage('Verify your email for password reset link.');
-            setEmail(''); // Limpa o campo de e-mail após o envio bem-sucedido
+            // Traduzindo a mensagem de sucesso
+            setMessage('Verifique seu e-mail para o link de redefinição de senha.');
+            setEmail('');
         } catch (err) {
             console.error("Erro ao redefinir a senha:", err.message);
-            setError('Ocured an error, try again later!');
+            // Traduzindo a mensagem de erro
+            setError('Ocorreu um erro, tente novamente mais tarde!');
         } finally {
-            setLoading(false); // Desativa o estado de carregamento
+            setLoading(false);
         }
     };
 
     return (
-        <div className='totalContainer Forgot'> {/* Reutilizando classes de estilo */}
-            <h2>Reset Password</h2>
+        <div className='totalContainer Forgot'>
+            <h2>Redefinir Senha</h2> {/* Traduzido */}
             <form onSubmit={handleSubmit}>
                 <label htmlFor="resetEmail">E-mail:</label>
                 <input
@@ -42,19 +42,19 @@ function ResetPassword() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="Insert your email"
+                    placeholder="Insira seu e-mail"
                 />
-                {message && <p>{message}</p>}
-                {error && <p>{error}</p>}
+                {message && <p className='success-message'>{message}</p>}
+                {error && <p className='error-message'>{error}</p>}       {/* Adicionado classe para styling */}
 
                 <button type="submit" disabled={loading}>
-                    {loading ? 'Sending...' : 'Reset'}
+                    {loading ? 'Enviando...' : 'Redefinir'} {/* Traduzido */}
                 </button>
 
                 <div className='accountAlready Register'>
-                    <h2>Remembered your password?</h2>
+                    <h2>Lembrou sua senha?</h2> {/* Traduzido */}
                     <button type="button" className='backLoginPage'>
-                        <Link to="/login">Back to Login</Link>
+                        <Link to="/login">Voltar para o Login</Link> {/* Traduzido */}
                     </button>
                 </div>
             </form>

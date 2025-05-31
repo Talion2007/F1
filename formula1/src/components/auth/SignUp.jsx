@@ -10,28 +10,25 @@ function SignUp() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { signup, login, isUsernameTaken } = useAuth(); // Importe isUsernameTaken
+  const { signup, login, isUsernameTaken } = useAuth();
   const navigate = useNavigate();
 
-  // Opcional: Estado para feedback de disponibilidade do nome de usuário em tempo real
   const [nameAvailabilityMessage, setNameAvailabilityMessage] = useState('');
   const [nameCheckTimeout, setNameCheckTimeout] = useState(null);
 
   const handleNameChange = (e) => {
     const newName = e.target.value;
     setName(newName);
-    setNameAvailabilityMessage(''); // Limpa a mensagem ao digitar
+    setNameAvailabilityMessage('');
 
-    // Limpa o timeout anterior para evitar múltiplas checagens desnecessárias
     if (nameCheckTimeout) {
       clearTimeout(nameCheckTimeout);
     }
 
-    // Define um novo timeout para checar após um pequeno atraso
     setNameCheckTimeout(
       setTimeout(async () => {
-        if (newName.length > 0) { // Só checa se algo foi digitado
-          setLoading(true); // Pode adicionar um loading para essa checagem
+        if (newName.length > 0) {
+          setLoading(true);
           try {
             const taken = await isUsernameTaken(newName);
             if (taken) {
@@ -43,10 +40,10 @@ function SignUp() {
             console.error("Erro ao verificar nome de usuário:", err);
             setNameAvailabilityMessage('Erro ao verificar nome.');
           } finally {
-            setLoading(false); // Remove o loading
+            setLoading(false);
           }
         }
-      }, 500) // Checa 500ms depois que o usuário para de digitar
+      }, 500)
     );
   };
 
@@ -56,17 +53,14 @@ function SignUp() {
     setLoading(true);
 
     try {
-      // A validação de unicidade do nome agora é feita dentro da função `signup` no AuthContext
       await signup(email, password, name);
 
-      // Se o registro for bem-sucedido, faça o login automático
       await login(email, password);
 
       alert('Cadastro realizado e login automático feito com sucesso!');
       navigate('/');
     } catch (err) {
       console.error('Erro durante o registro ou login automático:', err.message);
-      // Trate o novo erro 'auth/username-already-in-use'
       switch (err.code) {
         case 'auth/email-already-in-use':
           setError('Este e-mail já está em uso.');
@@ -77,7 +71,7 @@ function SignUp() {
         case 'auth/weak-password':
           setError('A senha deve ter pelo menos 6 caracteres.');
           break;
-        case 'auth/username-already-in-use': // NOVO TRATAMENTO DE ERRO
+        case 'auth/username-already-in-use':
           setError('Este nome de usuário já está em uso. Por favor, escolha outro.');
           break;
         case 'auth/user-not-found':
@@ -94,14 +88,14 @@ function SignUp() {
 
   return (
     <div className='totalContainer signup'>
-      <h2>Register New Account</h2>
+      <h2>Registrar Nova Conta</h2> {/* Traduzido */}
       <form onSubmit={handleSignUp}>
-        <label htmlFor="regName">Name:</label>
+        <label htmlFor="regName">Nome:</label> {/* Traduzido */}
         <input
           type="text"
           id="regName"
           value={name}
-          onChange={handleNameChange} // Usar a nova função de onChange
+          onChange={handleNameChange}
           required
         />
         {nameAvailabilityMessage && (
@@ -110,7 +104,7 @@ function SignUp() {
           </p>
         )}
 
-        <label htmlFor="regEmail">E-mail:</label>
+        <label htmlFor="regEmail">E-mail:</label> {/* Já estava em PT-BR */}
         <input
           type="email"
           id="regEmail"
@@ -119,7 +113,7 @@ function SignUp() {
           required
         />
 
-        <label htmlFor="regPassword">Password:</label>
+        <label htmlFor="regPassword">Senha:</label> {/* Traduzido */}
         <input
           type="password"
           id="regPassword"
@@ -127,20 +121,36 @@ function SignUp() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        {error && <p>{error}</p>}
+        {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>} {/* Mantive o estilo inline de erro do Login */}
         <button
           type="submit"
-          disabled={loading || nameAvailabilityMessage.includes('já está em uso')} // Desabilita se o nome não estiver disponível
+          disabled={loading || nameAvailabilityMessage.includes('já está em uso')}
         >
-          {loading ? 'Loading...' : 'Register'}
+          {loading ? 'Carregando...' : 'Registrar'} {/* Traduzido */}
         </button>
       </form>
       <div className='accountAlready Register'>
-        <h2>Already have an account?</h2>
+        <h2>Já tem uma conta?</h2> {/* Traduzido */}
         <button className="ButtonAccountConfig Register">
-          <Link to="/login">Login</Link>
+          <Link to="/login">Login</Link> {/* Já estava em PT-BR, mas garantindo */}
         </button>
       </div>
+      <div style={{ marginTop: '15px' }}>
+              <Link
+                to="/"
+                style={{
+                  color: '#007bff',
+                  textDecoration: 'underline',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0',
+                  fontSize: '0.9em'
+                }}
+              >
+                Voltar para Home!
+              </Link>
+            </div>
     </div>
   );
 }

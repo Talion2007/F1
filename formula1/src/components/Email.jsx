@@ -1,112 +1,60 @@
-import { useState } from "react";
-import emailjs from "emailjs-com";
-import "../styles/Email.css";
+import{useState}from"react";
+import emailjs from"emailjs-com";
+import"../styles/Email.css";
 
+function EmailForm(){
+  const[email,setEmail]=useState("");
+  const[name,setName]=useState("");
+  const[status,setStatus]=useState(true)
 
-function EmailForm() {
-
-  const [email, setEmail] = useState("");
-
-  const [name, setName] = useState("");
-
-  const [status, setStatus] = useState(true)
-
-
-  const sendEmail = (e) => {
-
+  const sendEmail=(e)=>{
     e.preventDefault();
-
-
     emailjs.send(
-
-      "service_vasotur", // from EmailJS dashboard
-
-      "template_b164ekm", // from EmailJS dashboard
-
-      { email, name }, // data to send
-
-      "AEf0rLomnd13Rvmw6" // from EmailJS account
-
-    ).then(() => {
-
+      "service_vasotur",
+      "template_b164ekm",
+      { email,name },
+      "AEf0rLomnd13Rvmw6"
+    ).then(()=>{
       setStatus(false)
-
       setEmail("");
-
-      alert("Email enviado com Sucesso!")
-
-    }).catch((err) => {
-
+      setName("");
+      alert("Email enviado com sucesso!")
+    }).catch((err)=>{
       console.error(err);
-
       setStatus(true)
-
       alert("Erro ao enviar o email. Tente novamente mais tarde.");
-
     });
-
   };
 
-
-  return (
-
+  return(
     <>
-
-      {status ?
-
+      {status?
         <>
-
-          <form onSubmit={sendEmail} className="email-form">
-
+          <form onSubmit={sendEmail}className="email-form">
             <input
-
               type="text"
-
-              placeholder="Enter your name"
-
+              placeholder="Insira seu nome"
               required
-
               value={name}
-
-              onChange={(e) => setName(e.target.value)}
-
+              onChange={(e)=>setName(e.target.value)}
             />
-
             <input
-
               type="email"
-
-              placeholder="Enter your email"
-
+              placeholder="Insira seu e-mail"
               required
-
               value={email}
-
-              onChange={(e) => setEmail(e.target.value)}
-
+              onChange={(e)=>setEmail(e.target.value)}
             />
-
-            <button type="submit">Send Email</button>
-
+            <button type="submit">Enviar E-mail</button>
           </form>
-
         </>
-
         :
-
         <>
-
-          <h3>Email enviado com sucesso!</h3>
-
+          <h3>E-mail enviado com sucesso!</h3>
         </>
-
       }
-
     </>
-
   );
-
 }
 
-
-export default EmailForm; 
+export default EmailForm;

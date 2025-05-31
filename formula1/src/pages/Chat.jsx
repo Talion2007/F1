@@ -11,21 +11,39 @@ import notificationSound from '../assets/notification.mp3';
 
 import "../styles/Page.css";
 import "../styles/Auth.css";
-import "../styles/Chat.css"; // Certifique-se que este é o CSS que você está usando (ou ChatSpecific.css)
+import "../styles/Chat.css";
 
-const ADMIN_EMAIL = 'radiance.knight.2007@gmail.com'; // Certifique-se que este email é EXATAMENTE o mesmo do seu admin no Firebase
+const ADMIN_EMAIL = 'radiance.knight.2007@gmail.com';
 
 function Chat() {
+    // --- SEO: Gerenciamento do Título da Página e Meta Descrição ---
+    useEffect(() => {
+        document.title = "Chat Global F1 | Converse com Fãs";
+
+        let metaDescription = document.querySelector('meta[name="description"]');
+        if (!metaDescription) {
+            metaDescription = document.createElement('meta');
+            metaDescription.name = 'description';
+            document.head.appendChild(metaDescription);
+        }
+        metaDescription.content = "Participe do chat global da Fórmula 1! Conecte-se com outros fãs, discuta corridas, pilotos e o universo da F1 em tempo real.";
+
+        return () => {
+            if (metaDescription && metaDescription.parentNode) {
+                metaDescription.parentNode.removeChild(metaDescription);
+            }
+        };
+    }, []); // Este useEffect não depende de estados, então roda uma vez ao montar
+
     const [messageText, setMessageText] = useState('');
     const [messages, setMessages] = useState([]);
     const [sending, setSending] = useState(false);
-    const { currentUser } = useAuth(); // Obtém o usuário do contexto
+    const { currentUser } = useAuth();
 
     const [userUid, setUserUid] = useState(null);
     const [userEmail, setUserEmail] = useState(null);
     const [userDisplayName, setUserDisplayName] = useState('Usuário Anônimo');
 
-    // useEffect para garantir que o UID, EMAIL e nome do usuário sejam atualizados quando currentUser mudar
     useEffect(() => {
         if (currentUser) {
             setUserUid(currentUser.uid);
@@ -48,7 +66,7 @@ function Chat() {
 
     const playNotificationSound = useCallback(() => {
         if (audioRef.current) {
-            audioRef.current.currentTime = 0; // Reinicia o áudio
+            audioRef.current.currentTime = 0;
             audioRef.current.play().catch(error => {
                 console.warn("Não foi possível tocar o som da notificação. Motivo:", error.name, error.message);
                 console.warn("Isso geralmente acontece porque o usuário não interagiu com a página ainda (política de autoplay).");
@@ -130,7 +148,7 @@ function Chat() {
                     text: '[Conteúdo removido pelo administrador]',
                     hiddenByAdmin: true,
                     hiddenAt: serverTimestamp(),
-                    hiddenBy: currentUser.email, // Salva quem ocultou
+                    hiddenBy: currentUser.email,
                 });
                 console.log(`Mensagem ${messageId} ocultada pelo admin.`);
             } catch (error) {
@@ -143,7 +161,7 @@ function Chat() {
     useEffect(() => {
         const messagesQuery = query(
             collection(db, "chats", "general_chat", "messages"),
-            orderBy("timestamp", "asc") // Ordenar por timestamp de forma crescente (ascendente)
+            orderBy("timestamp", "asc")
         );
 
         const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
@@ -175,7 +193,6 @@ function Chat() {
                 playNotificationSound();
             }
 
-            // Scroll para o final das mensagens
             if (messagesEndRef.current) {
                 setTimeout(() => {
                     messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
@@ -192,25 +209,17 @@ function Chat() {
         };
     }, [currentUser, playNotificationSound]);
 
-    // MUDANÇA: renderMessage agora recebe 'index' e 'allMessages'
     const renderMessage = useCallback(({ message, index, allMessages }) => {
         const isMyMessage = currentUser && message.senderEmail === currentUser.email;
         const isHidden = message.hiddenByAdmin;
 
-        // NOVO: Adiciona uma verificação para saber se a mensagem é do admin
         const isMessageFromAdmin = message.senderEmail === ADMIN_EMAIL;
 
-        // Lógica para verificar se o nome do remetente deve ser exibido
         const showSenderName = (() => {
-            // Se for a primeira mensagem, sempre mostra o nome
             if (index === 0) {
                 return true;
             }
-            // Obter a mensagem anterior
             const prevMessage = allMessages[index - 1];
-            // Mostrar o nome se o remetente for diferente do remetente da mensagem anterior
-            // NOVO: Também mostra o nome se for mensagem de admin e a anterior não for de admin,
-            // ou se a anterior for de admin e a atual for de outro usuário.
             return prevMessage && (
                 prevMessage.senderEmail !== message.senderEmail ||
                 (isMessageFromAdmin && prevMessage.senderEmail !== ADMIN_EMAIL) ||
@@ -220,17 +229,14 @@ function Chat() {
 
 
         return (
-            // NOVO: Adiciona a classe 'admin-message' se a mensagem for do admin
             <div className={`message-bubble ${isMyMessage ? 'my-message' : 'other-message'} ${isMessageFromAdmin ? 'admin-message' : ''}`}>
-                {/* Condicionalmente renderiza o nome do remetente */}
                 {showSenderName && <p className="message-sender-name">{message.senderName}</p>}
                 <p className="message-text">{isHidden ? '[Conteúdo removido pelo administrador]' : message.text}</p>
                 {message.timestamp && (
                     <span className="message-timestamp">
-                        {new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(message.timestamp.toDate()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} {/* <-- Alterado para pt-BR */}
                     </span>
                 )}
-                {/* Botão de ocultar visível apenas para admin e se a mensagem não estiver oculta */}
                 {isAdmin && !isHidden && (
                     <button
                         className="LoginButton Register Admin"
@@ -241,7 +247,7 @@ function Chat() {
                 )}
             </div>
         );
-    }, [currentUser, isAdmin, handleHideMessage, ADMIN_EMAIL]); // NOVO: Adicione ADMIN_EMAIL às dependências
+    }, [currentUser, isAdmin, handleHideMessage, ADMIN_EMAIL]);
 
     return (
         <>
@@ -252,14 +258,15 @@ function Chat() {
                     <div className="LoginMessage Block">
                         <div>
                             <h1 className="title">Chat - F1</h1>
-                            <h3>This content is restricted to Registered Members. Sign In or Register an account to Continue!</h3>
+                            {/* Traduzido aqui */}
+                            <h3>Este conteúdo é restrito a membros registrados. Faça login ou registre uma conta para continuar!</h3>
                         </div>
                         <div className="buttons">
                             <button className="LoginButton">
                                 <Link to="/login">Login</Link>
                             </button>
                             <button className="LoginButton Register">
-                                <Link to="/register">Register</Link>
+                                <Link to="/register">Registrar</Link> {/* Traduzido aqui */}
                             </button>
                         </div>
                     </div>
@@ -271,9 +278,8 @@ function Chat() {
                         <article>
                             <div className="messages-display-area" ref={messagesEndRef}>
                                 {messages.length === 0 ? (
-                                    <p className="no-messages-text">Any message yet! Be the first to send!</p>
+                                    <p className="no-messages-text">Nenhuma mensagem ainda! Seja o primeiro a enviar!</p>
                                 ) : (
-                                    // MUDANÇA: Passa 'index' e 'messages' para renderMessage
                                     messages.map((msg, index) => (
                                         <div key={msg.id}>
                                             {renderMessage({ message: msg, index: index, allMessages: messages })}
@@ -293,9 +299,9 @@ function Chat() {
                                 <button
                                     className="LoginButton Register Chat"
                                     onClick={handleSendMessage}
-                                    disabled={sending || !userEmail} // Desabilita se estiver enviando ou se userEmail não estiver pronto
+                                    disabled={sending || !userEmail}
                                 >
-                                    {sending ? "Enviando..." : "Enviar"}
+                                    {sending ? "Enviando..." : "Enviar"} {/* Traduzido aqui */}
                                 </button>
                             </div>
                         </article>

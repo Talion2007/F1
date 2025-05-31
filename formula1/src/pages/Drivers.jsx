@@ -1,34 +1,65 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import Loading from "../components/Loading";
+import Header from "../components/Header.jsx";
+import Footer from "../components/Footer.jsx";
+import Loading from "../components/Loading.jsx";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from '../context/AuthContext.jsx'; // Certifique-se de usar .jsx
+import { useAuth } from '../context/AuthContext.jsx';
 import "../styles/Page.css";
 import "../styles/Drivers.css"
 
 function Drivers() {
-  useEffect(() => {
-    document.title = "Drivers";
-  })
+  // === INÍCIO DAS DECLARAÇÕES DE ESTADO (TODAS NO TOPO) ===
 
-  const { currentUser } = useAuth(); // Agora 'user' é 'currentUser' do contexto
+  const { currentUser } = useAuth();
 
   const [users, setUsers] = useState(() => {
     const saveUsers = localStorage.getItem("User Key");
     return saveUsers ? JSON.parse(saveUsers) : [];
   });
-  const [races, setRaces] = useState(() => {
+
+  const [races, setRaces] = useState(() => { // <--- AGORA 'races' ESTÁ DECLARADA AQUI
     const saveRaces = localStorage.getItem("Races Key");
     return saveRaces ? JSON.parse(saveRaces) : [];
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [sessionKey, setSessionKey] = useState(() => {
     const saveYearPilots = localStorage.getItem("Pilots Year Key");
     return saveYearPilots ? JSON.parse(saveYearPilots) : "7768";
   });
+
   const [flippedCard, setFlippedCard] = useState(null);
+
+  // === FIM DAS DECLARAÇÕES DE ESTADO ===
+
+
+  // --- SEO: Gerenciamento do Título da Página e Meta Descrição ---
+  useEffect(() => {
+    // Obter o ano da sessão selecionada para o título dinâmico
+    // 'races' AGORA já está disponível aqui.
+    const selectedRace = races.find(race => race.session_key === sessionKey);
+    const year = selectedRace ? selectedRace.year : 'Atual'; // Pega o ano da sessão selecionada
+    const circuitName = selectedRace ? selectedRace.circuit_short_name : '';
+
+    document.title = `Pilotos F1 - ${circuitName} ${year} | Estatísticas e Perfis`;
+
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.name = 'description';
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.content = `Descubra todos os pilotos da Fórmula 1 para a temporada de ${year}, incluindo informações de equipe, nacionalidade e estatísticas. Acompanhe seus pilotos favoritos.`;
+
+    return () => {
+      if (metaDescription && metaDescription.parentNode) {
+        metaDescription.parentNode.removeChild(metaDescription);
+      }
+    };
+  }, [sessionKey, races]);
+
 
   useEffect(() => {
     async function fetchUsers() {
@@ -63,32 +94,34 @@ function Drivers() {
   useEffect(() => {
     localStorage.setItem("Pilots Year Key", JSON.stringify(sessionKey));
   }, [sessionKey]);
+
   return (
     <>
       <Header />
       <section>
-        {!currentUser ? ( // Se não houver usuário logado
+        {!currentUser ? (
           <div className="LoginMessage Block">
             <div>
-              <h1 className="title">Drivers - F1 </h1>
-              <h3>This content is restric to Registred Members. Sign In or Register an account to Continue!</h3>
+              <h1 className="title">Pilotos - F1 </h1>
+              <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3>
             </div>
             <div className="buttons">
               <button className="LoginButton">
                 <Link to="/login">Login</Link>
               </button>
               <button className="LoginButton Register">
-                <Link to="/register">Register</Link>
+                <Link to="/register">Registrar</Link>
               </button>
             </div>
           </div>
-        ) : ( // Se houver usuário logado
+        ) : (
           <>
             <div className="container">
-              <h1 className="title">Drivers - F1 </h1>
+              <h1 className="title">Pilotos de F1</h1>
               <select
                 value={sessionKey}
                 onChange={(e) => setSessionKey(e.target.value)}
+                title="Selecione a sessão de qualificação para ver os pilotos."
               >
                 {races.map((race) => (
                   <option key={race.session_key} value={race.session_key}>
@@ -126,14 +159,14 @@ function Drivers() {
                                 minimumIntegerDigits: 2,
                               })}
                             </h1>
-                            <img src={user.headshot_url} alt={`${user.full_name}'s portrait`} />
+                            <img src={user.headshot_url} alt={`Retrato de ${user.full_name}`} />
                           </div>
                           <div className="BlockTwo">
                             <h3>
                               {user.full_name} ({user.name_acronym})
                             </h3>
                             <h4>
-                              {user.country_code || "UNK"} - {user.team_name}
+                              {user.country_code || "Desconhecido"} - {user.team_name}
                             </h4>
                           </div>
                         </div>
@@ -142,12 +175,12 @@ function Drivers() {
                           className="CardDriverBack"
                           style={{ backgroundColor: "#" + user.team_colour }}
                         >
-                          <h3>Driver Number: {user.driver_number}</h3>
-                          <h3>Full Name: {user.full_name}</h3>
-                          <h3>Broadcast Name: {user.broadcast_name}</h3>
-                          <h3>Name Acronym: {user.name_acronym}</h3>
-                          <h3>Country Code: {user.country_code || "Unknown"}</h3>
-                          <h3>Team Name: {user.team_name}</h3>
+                          <h3>Número do Piloto: {user.driver_number}</h3>
+                          <h3>Nome Completo: {user.full_name}</h3>
+                          <h3>Nome de Transmissão: {user.broadcast_name}</h3>
+                          <h3>Acrônimo do Nome: {user.name_acronym}</h3>
+                          <h3>Código do País: {user.country_code || "Desconhecido"}</h3>
+                          <h3>Nome da Equipe: {user.team_name}</h3>
                         </div>
                       </div>
                     </div>

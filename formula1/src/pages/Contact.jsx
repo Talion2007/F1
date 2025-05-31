@@ -2,43 +2,59 @@ import { useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Email from "../components/Email"
-import Me from "../assets/profile.jpeg"
-import { useAuth } from "../context/AuthContext"; // Importe useAuth
+import Me from "../assets/profile.jpeg" // Assumindo que profile.jpeg existe e é a imagem do Felipe
+import { useAuth } from "../context/AuthContext";
 import "../styles/Page.css"
 
 function Contact() {
-  const { currentUser } = useAuth(); // Obtenha o usuário logado
-  
+  const { currentUser } = useAuth();
+
+  // --- SEO: Gerenciamento do Título da Página e Meta Descrição ---
   useEffect(() => {
-    document.title = "About Me";
-  })
+    document.title = "Sobre Mim | Felipe Cagnin - Desenvolvedor Full-stack";
+
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.name = 'description';
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.content = "Conheça Felipe Cagnin, um desenvolvedor full-stack de 17 anos especializado em soluções digitais eficientes e criativas. Saiba mais sobre sua jornada na tecnologia, paixões e experiência.";
+
+    return () => {
+      if (metaDescription && metaDescription.parentNode) {
+        metaDescription.parentNode.removeChild(metaDescription);
+      }
+    };
+  }, []); // Não há dependências, pois o conteúdo é estático
+
   return (
     <>
       <Header />
 
       <section className="Main">
-        <h1 className="title">About Me</h1>
+        <h1 className="title">Sobre Mim</h1> {/* Traduzido */}
 
         <div className="profile">
           <img src={Me} alt="Felipe Cagnin" className="profile-image" />
-          <p>Hello! My name is Felipe Cagnin, I’m a 17-year-old Brazilian currently studying Systems Development at SENAI. Since a young age, I’ve been passionate about technology and problem-solving, which naturally led me to pursue a path in software development. My main goal is to become a full-stack developer capable of building efficient, creative, and user-centered digital solutions.
+          <p>Olá! Meu nome é Felipe Cagnin, tenho 17 anos e sou brasileiro, atualmente estudando Desenvolvimento de Sistemas no SENAI. Desde muito jovem, sou apaixonado por tecnologia e resolução de problemas, o que naturalmente me levou a seguir o caminho do desenvolvimento de software. Meu principal objetivo é me tornar um desenvolvedor full-stack capaz de construir soluções digitais eficientes, criativas e centradas no usuário.
 
-            To put my skills into practice and grow professionally, I created Cagnin Software Development — my personal brand and the starting point of my journey in the tech industry. Through this initiative, I aim to develop projects that reflect my dedication to clean code, continuous learning, and impactful digital work.
+            Para colocar minhas habilidades em prática e crescer profissionalmente, criei a Cagnin Software Development — minha marca pessoal e o ponto de partida da minha jornada na indústria de tecnologia. Por meio desta iniciativa, busco desenvolver projetos que reflitam minha dedicação a um código limpo, aprendizado contínuo e trabalho digital impactante.
 
-            Outside of the tech world, I’m someone who values knowledge, creativity, and spirituality. I enjoy reading and gaming in my free time, and I’m an active member of the Congregação Cristã no Brasil, where I’ve learned the importance of humility, discipline, and purpose. Music is also a big part of who I am — I play the flute, soprano saxophone, and guitar, which helps me express myself in different and meaningful ways.
+            Fora do mundo da tecnologia, sou alguém que valoriza o conhecimento, a criatividade e a espiritualidade. Gosto de ler e jogar em meu tempo livre, e sou membro ativo da Congregação Cristã no Brasil, onde aprendi a importância da humildade, disciplina e propósito. A música também é uma grande parte de quem eu sou — toco flauta, saxofone soprano e violão, o que me ajuda a expressar de maneiras diferentes e significativas.
 
-            I believe that growth comes from curiosity, consistency, and collaboration. I’m always looking to expand my horizons, take on new challenges, and contribute to projects that inspire, connect, and transform.</p>
+            Acredito que o crescimento vem da curiosidade, consistência e colaboração. Estou sempre buscando expandir meus horizontes, enfrentar novos desafios e contribuir para projetos que inspirem, conectem e transformem.</p> {/* Traduzido todo o texto */}
         </div>
         <div className="ContactUs">
         {!currentUser ? (
           <>
-          <h2 className="title">Contact Us</h2>
-          <Email /> 
+          <h2 className="title">Entre em Contato</h2> {/* Traduzido */}
+          <Email />
           </>
         ) : (
           <>
-          <h2 className="title">Logged</h2>
-          <h3>Email sent successfully on your register!</h3>
+          <h2 className="title">Logado</h2> {/* Traduzido */}
+          <h3>E-mail enviado com sucesso no seu cadastro!</h3> {/* Traduzido */}
           </>
         )}
         </div>
