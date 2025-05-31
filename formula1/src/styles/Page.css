@@ -121,9 +121,9 @@ section {
 
   .divRaces {
     width: 25vw;
-    background-image: url("../assets/ultra.png");
+    background-image: url("..//assets/effect.png");
     background-size: cover;
-    background-position: center;
+    background-position: auto;
     background-color: #21212c;
     border-radius: 1em;
     border: aliceblue 0.75em solid;
