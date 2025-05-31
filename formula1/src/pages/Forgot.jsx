@@ -7,7 +7,7 @@ import "../styles/Page.css";
 function Forgot() {
   useEffect(() => {
     // --- SEO: Gerenciamento do Título da Página ---
-    document.title = "Redefinir Senha | F1 Dashboard"; // Título já estava em PT-BR, adicionei um complemento
+    document.title = "Redefinir Senha | Fórmula 1 - Statistics"; // Título já estava em PT-BR, adicionei um complemento
 
     // --- SEO: Gerenciamento da Meta Descrição ---
     let metaDescription = document.querySelector('meta[name="description"]');

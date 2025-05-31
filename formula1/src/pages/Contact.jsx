@@ -11,7 +11,7 @@ function Contact() {
 
   // --- SEO: Gerenciamento do Título da Página e Meta Descrição ---
   useEffect(() => {
-    document.title = "Sobre Mim | Felipe Cagnin - Desenvolvedor Full-stack";
+    document.title = "Sobre Mim - Felipe Cagnin - Desenvolvedor Full-stack | Fórmula 1 - Statistics";
 
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {

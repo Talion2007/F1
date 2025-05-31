@@ -6,7 +6,7 @@ import "../styles/Page.css";
 function Login() {
   useEffect(() => {
     // --- SEO: Gerenciamento do Título da Página ---
-    document.title = "Login | Acesse o F1 Dashboard"; // Título mais descritivo
+    document.title = "Login | Fórmula 1 - Statistics"; // Título mais descritivo
 
     // --- SEO: Gerenciamento da Meta Descrição ---
     let metaDescription = document.querySelector('meta[name="description"]');

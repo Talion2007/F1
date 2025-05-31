@@ -18,7 +18,7 @@ const ADMIN_EMAIL = 'radiance.knight.2007@gmail.com';
 function Chat() {
     // --- SEO: Gerenciamento do Título da Página e Meta Descrição ---
     useEffect(() => {
-        document.title = "Chat Global F1 | Converse com Fãs";
+        document.title = "Chat Global F1 | Fórmula 1 - Statistics";
 
         let metaDescription = document.querySelector('meta[name="description"]');
         if (!metaDescription) {

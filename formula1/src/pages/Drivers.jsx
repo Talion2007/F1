@@ -43,7 +43,7 @@ function Drivers() {
     const year = selectedRace ? selectedRace.year : 'Atual'; // Pega o ano da sessão selecionada
     const circuitName = selectedRace ? selectedRace.circuit_short_name : '';
 
-    document.title = `Pilotos F1 - ${circuitName} ${year} | Estatísticas e Perfis`;
+    document.title = `Pilotos F1 - ${circuitName} ${year} | Fórmula 1 - Statistics`;
 
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {

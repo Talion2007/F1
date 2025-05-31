@@ -6,7 +6,7 @@ import "../styles/Page.css";
 function Register() {
   useEffect(() => {
     // --- SEO: Gerenciamento do Título da Página ---
-    document.title = "Registrar | Crie sua Conta F1 Dashboard"; // Título mais descritivo
+    document.title = "Registrar - Crie sua Conta F1 Dashboard | Fórmula 1 - Statistics"; // Título mais descritivo
 
     // --- SEO: Gerenciamento da Meta Descrição ---
     let metaDescription = document.querySelector('meta[name="description"]');

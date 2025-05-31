@@ -15,6 +15,7 @@ function Home() {
   const { currentUser, logout, deleteAccount } = useAuth();
   const navigate = useNavigate();
 
+  // Efeito para o carrossel
   useEffect(() => {
     const interval = setInterval(() => {
       setCarrousel(prevCarrousel => (prevCarrousel + 1) % 4);
@@ -22,6 +23,7 @@ function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // Efeito para o nome do usuário logado
   useEffect(() => {
     if (currentUser) {
       setUserName(currentUser.displayName || currentUser.email);
@@ -29,6 +31,29 @@ function Home() {
       setUserName('');
     }
   }, [currentUser]);
+
+  // --- SEO: Gerenciamento do Título da Página e Meta Descrição (sem 'year') ---
+  useEffect(() => {
+    // Define o título da página
+    document.title = "Início | Formula 1 - Statistics";
+
+    // Gerencia a meta description: Cria se não existir, atualiza se existir
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.name = 'description';
+        document.head.appendChild(metaDescription);
+    }
+    // Conteúdo estático para a meta description da Home
+    metaDescription.content = "Acompanhe notícias, resultados, estatísticas e muito mais sobre a Fórmula 1. Seu portal completo para fãs da F1!";
+
+    // Função de limpeza: Remove a meta tag quando o componente é desmontado
+    return () => {
+        if (metaDescription && metaDescription.parentNode) {
+            metaDescription.parentNode.removeChild(metaDescription);
+        }
+    };
+  }, []); // Array de dependências vazio, pois não depende de 'year' ou outros estados dinâmicos
 
   const handleLogout = async () => {
     try {
@@ -76,27 +101,24 @@ function Home() {
 
       <section className="Main">
         <div className="Carrousel">
-          {/* Otimização SEO: Adicionado alt text descritivo para as imagens do carrossel */}
           <img
             src={carrouselImages[carrousel]}
             alt={
               carrousel === 0
-                ? "Carro de Fórmula 1 na pista"
+                ? "Carro de Fórmula 1 na pista de corrida"
                 : carrousel === 1
-                ? "Paddock de Fórmula 1 com equipes"
+                ? "Paddock de Fórmula 1, boxes das equipes"
                 : carrousel === 2
-                ? "Piloto de Fórmula 1 celebrando vitória"
-                : "Grid de largada da Fórmula 1 com carros"
+                ? "Piloto de Fórmula 1 celebrando vitória no pódio"
+                : "Grid de largada da Fórmula 1 com carros em posição"
             }
-            title="Imagens dinâmicas do universo da Fórmula 1" // Adicionado title para acessibilidade e SEO
+            title="Imagens dinâmicas do universo da Fórmula 1"
           />
         </div>
 
-        {/* Otimização SEO: h1 deve ser o título principal da página, com palavra-chave */}
-        <h1 className="title">Fórmula 1: O Seu Portal Completo</h1>
+        <h1 className="title">Formula 1: Seu Portal Completo</h1>
 
         <main>
-          {/* Tradução e Otimização SEO: Inserção de palavras-chave naturalmente no texto */}
           <p>
             A Fórmula 1 (F1) é o ápice da velocidade, precisão e estratégia, onde os melhores pilotos, engenheiros e equipes do mundo se reúnem para competir no mais alto nível do automobilismo. Com uma história de mais de 70 anos, a F1 evoluiu para um espetáculo global assistido por milhões em todo o mundo, cativando o público com sua velocidade impressionante, tecnologia de ponta e rivalidades intensas. As corridas acontecem em uma ampla variedade de pistas, cada uma oferecendo desafios únicos para pilotos e equipes. Dos circuitos famosos e históricos como Mônaco, Silverstone e Spa-Francorchamps, a adições mais recentes como o Circuito da Cidade de Baku e o Circuito das Américas, a Fórmula 1 oferece uma combinação de ruas estreitas e sinuosas na cidade e circuitos de alta velocidade e abertos. A diversidade dessas pistas adiciona uma rica camada de complexidade ao esporte, tornando-o um dos esportes a motor mais desafiadores e emocionantes do mundo. No cerne da F1 está a batalha por dois títulos prestigiados: o Campeonato Mundial de Pilotos e o Campeonato Mundial de Construtores, ambos representando as maiores conquistas do esporte, com cada equipe e piloto buscando a glória em cada um dos 22 a 24 fins de semana de corrida da temporada.
           </p>
@@ -122,27 +144,23 @@ function Home() {
 
         {!currentUser ? (
           <div className="LoginMessage">
-            {/* Tradução e Otimização SEO: Título e texto de CTA claros */}
             <h3>Faça Login ou Registre-se!</h3>
             <div className="buttons">
               <button className="LoginButton">
-                {/* Otimização SEO: Adicionado title para o link */}
-                <Link to="/login" title="Acesse sua conta de Fórmula 1">Login</Link>
+                <Link to="/login" title="Acesse sua conta do portal Formula 1 - Statistics">Login</Link>
               </button>
               <button className="LoginButton Register">
-                {/* Otimização SEO: Adicionado title para o link */}
-                <Link to="/register" title="Crie sua conta no portal da F1">Registrar</Link>
+                <Link to="/register" title="Crie sua nova conta no portal Formula 1 - Statistics">Registrar</Link>
               </button>
             </div>
           </div>
         ) : (
           <div className="LoginMessage">
-            {/* Tradução e mensagem de boas-vindas */}
             <h3>Bem-vindo(a), {userName}</h3>
 
             <div className="buttons">
               <button onClick={handleLogout} className="LoginButton">
-                Logout
+                Sair
               </button>
               <button onClick={handleAccountDeletion} className="LoginButton Delete">
                 Excluir Conta

@@ -19,7 +19,7 @@ function Qualifying() {
     // --- SEO: Gerenciamento do Título da Página e Meta Descrição ---
     useEffect(() => {
         // Define o título da página, incluindo o ano para melhor SEO
-        document.title = `Qualifying e Corridas - Calendario ${year}`;
+        document.title = `Qualifying e Corridas - Calendario ${year} | Fórmula 1 - Statistics`;
 
         // Gerencia a meta description: Cria se não existir, atualiza se existir
         let metaDescription = document.querySelector('meta[name="description"]');
