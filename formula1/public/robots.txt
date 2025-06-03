@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://formula1-statistics.vercel.app/sitemap.xml
