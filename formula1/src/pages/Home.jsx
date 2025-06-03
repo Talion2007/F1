@@ -116,7 +116,7 @@ function Home() {
           />
         </div>
 
-        <h1 className="title">Formula 1: Seu Portal Completo</h1>
+        <h1 className="title">Formula 1 Statistics: Seu Portal Completo</h1>
 
         <main>
           <p>
