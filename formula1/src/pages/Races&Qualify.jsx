@@ -216,7 +216,6 @@ function Qualifying() {
                     </div>
                 ) : (
                     <>
-                        <div className="container">
                             <h1 className="title">Corridas e Qualifying - F1 {year}
                                 <br/>
                             <select value={year} onChange={(e) => setYear(e.target.value)} title="Selecione o ano para ver os eventos de F1">
@@ -225,7 +224,6 @@ function Qualifying() {
                                 <option value="2023">2023</option>
                             </select>
                             </h1>
-                        </div>
 
                         {error && <p className="error">Error: {error}</p>}
 
