@@ -198,7 +198,7 @@ function Drivers() {
         ) : (
           <>
             <div className="container">
-              <h1 className="title">Pilotos de F1</h1>
+              <h1 className="title">Pilotos</h1>
               {/* Conditionally render the select only if races is an array and not empty */}
               {Array.isArray(races) && races.length > 0 ? (
                 <select

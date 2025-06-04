@@ -222,7 +222,7 @@ function Pratices() {
             <Header />
             <section>
                         <div className="container tags">
-                            <h1 className="title">Sprints e Treinos Livres - F1 {year}
+                            <h1 className="title">Sprints e Treinos Livres
                             </h1>
                             <select value={year} onChange={(e) => setYear(e.target.value)} title="Selecione o ano para ver os eventos de F1">
                                 <option value="2025">2025</option>
