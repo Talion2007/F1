@@ -70,7 +70,7 @@
 .qualifying-card-front {
   z-index: 2; /* Ensures the front is on top when not flipped */
   background-image: url("..//assets/formula1-noback.png"); /* Example: Use your existing effect.png */
-    background-size: 15%;
+    background-size: 12.5%;
   background-position: right bottom;
   background-repeat: no-repeat;
 }
