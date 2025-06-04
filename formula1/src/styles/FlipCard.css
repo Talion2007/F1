@@ -133,7 +133,7 @@
 
 @media screen and (max-width: 480px) {
     .qualifying-card {
-          margin: 2.5em;
+          margin: 2em;
     }
   .qualifying-card-inner {
     /* Changed from 'CardInner' */
