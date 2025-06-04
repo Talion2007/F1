@@ -7,7 +7,7 @@ article {
 }
 
     button:active{
-  transform: scale(0.1);
+  transform: scale(0.1em);
   transition: 1s;
 }
 
