@@ -162,17 +162,22 @@ section {
   }
 }
 
+.container.tags{
+  margin-bottom: -5vh;
+}
+
 .container {
   display: flex;
   flex-direction: row;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: space-evenly;
 
   select {
     border: aliceblue 0.25em solid;
     background-color: #21212c;
     border-radius: 1em;
     color: aliceblue;
+    margin: 1em;
   }
 }
 
