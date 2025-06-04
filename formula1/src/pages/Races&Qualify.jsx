@@ -217,17 +217,20 @@ function Qualifying() {
                 ) : (
                     <>
                         <div className="container">
-                            <h1 className="title">Corridas - F1 {year}</h1>
-                            <select value={year} onChange={(e) => setYear(e.target.value)} title="Selecione o ano para ver as corridas e qualificações de F1">
+                            <h1 className="title">Corridas e Qualifying - F1 {year}
+                                <br/>
+                            <select value={year} onChange={(e) => setYear(e.target.value)} title="Selecione o ano para ver os eventos de F1">
                                 <option value="2025">2025</option>
                                 <option value="2024">2024</option>
                                 <option value="2023">2023</option>
                             </select>
+                            </h1>
                         </div>
 
                         {error && <p className="error">Error: {error}</p>}
 
                         {/* --- Race Session Cards --- */}
+                            <h1 className="title">Corridas - F1 {year}</h1>
                         <article className="qualifying-cards-container">
                             {loading && raceSessionsFiltered.length === 0 ? (
                                 <Loading />
