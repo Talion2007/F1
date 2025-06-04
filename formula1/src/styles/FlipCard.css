@@ -113,6 +113,10 @@
 }
 
 @media screen and (max-width: 768px) {
+        .qualifying-card {
+          margin: 2em;
+    }
+
   .qualifying-card-inner {
     /* Changed from 'CardInner' */
     width: 85vw;
@@ -128,16 +132,20 @@
 }
 
 @media screen and (max-width: 480px) {
+    .qualifying-card {
+          margin: 2.5em;
+    }
   .qualifying-card-inner {
     /* Changed from 'CardInner' */
     width: 85vw;
     box-shadow: none !important;
+         height: 20vh;
   }
 
   .qualifying-card-front, /* Changed from 'CardFront' */
 .qualifying-card-back {
     box-shadow: none !important;
     border: #21212c 0.75em solid;
-     height: 25vh;
+         height: 20vh;
   }
 }
