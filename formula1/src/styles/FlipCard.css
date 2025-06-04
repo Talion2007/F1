@@ -108,6 +108,7 @@
 .qualifying-card-back {
     box-shadow: none !important;
     border: #21212c 0.75em solid;
+     height: 20vh;
   }
 }
 
@@ -122,6 +123,7 @@
 .qualifying-card-back {
     box-shadow: none !important;
     border: #21212c 0.75em solid;
+     height: 20vh;
   }
 }
 
@@ -136,5 +138,6 @@
 .qualifying-card-back {
     box-shadow: none !important;
     border: #21212c 0.75em solid;
+     height: 20vh;
   }
 }
