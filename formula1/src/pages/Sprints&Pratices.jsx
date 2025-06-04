@@ -241,6 +241,7 @@ function Pratices() {
                     </div>
                 ) : (
                     <>
+                        <div className="container" style={{marginBottom: 0}}>
                             <h1 className="title">Sprints e Treinos Livres - F1 {year}
                                  <br/>
                             <select value={year} onChange={(e) => setYear(e.target.value)} title="Selecione o ano para ver os eventos de F1">
@@ -249,6 +250,7 @@ function Pratices() {
                                 <option value="2023">2023</option>
                             </select>
                             </h1>
+                        </div>
 
                         {error && <p className="error">Error: {error}</p>}
 
