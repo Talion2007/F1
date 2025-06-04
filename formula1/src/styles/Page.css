@@ -6,6 +6,10 @@ article {
   gap: 1em;
 }
 
+    button:active{
+  transform: scale(0.7);
+}
+
 .profile {
   display : flex;
   flex-direction: row;
