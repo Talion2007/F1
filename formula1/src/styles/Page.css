@@ -8,6 +8,7 @@ article {
 
     button:active{
   transform: scale(0.1);
+  transition-duration: 1s;
 }
 
 .profile {
