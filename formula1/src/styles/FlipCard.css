@@ -59,8 +59,7 @@
 
   p {
     width: auto;
-    text-shadow: -1px 0 #15151fff, 0 1px black, 1px 0 #15151fff,
-      0 -1px #15151fff;
+   
     font-size: larger;
     margin: 0%;
     padding: 0.5em;
@@ -70,11 +69,10 @@
 /* Specific styles for the Front of the Qualifying Card */
 .qualifying-card-front {
   z-index: 2; /* Ensures the front is on top when not flipped */
-  background-image: url("..//assets/effect.png"); /* Example: Use your existing effect.png */
-    background-size: cover;
-  background-position: bottom;
-  background-size: cover;
-  background-position: center;
+  background-image: url("..//assets/formula1-noback.png"); /* Example: Use your existing effect.png */
+    background-size: 15%;
+  background-position: right bottom;
+  background-repeat: no-repeat;
 }
 
 /* Specific styles for the Back of the Qualifying Card */
