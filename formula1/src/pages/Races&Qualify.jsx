@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from '../context/AuthContext.jsx';
 import { Link } from "react-router-dom";
 import "../styles/Page.css";
-import "../styles/FlipCard.css"; // Import the new CSS file
+import "../styles/FlipCard.css"; // Certifique-se de que este CSS contém as classes corretas
 
 // Helper function to format seconds into MM:SS.mmm
 const formatLapTime = (seconds) => {
@@ -22,6 +22,10 @@ const formatLapTime = (seconds) => {
 
     return `${formattedMinutes}:${formattedSeconds}.${formattedMilliseconds}`;
 };
+
+// Helper to introduce a delay for API requests (importante para evitar 429)
+const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
 
 function Qualifying() {
     const [year, setYear] = useState(() => {
@@ -81,12 +85,13 @@ function Qualifying() {
 
                 // --- FETCHING BEST LAPS FOR RACE SESSIONS ---
                 const raceSessions = fetchedSessions.filter(session => session.session_name === 'Race');
-                const raceFastestLapsPromises = raceSessions.map(async (race) => {
+                const raceFastestLapsPromises = raceSessions.map(async (race, index) => {
+                    await delay(index * 250); // Adiciona um delay para evitar 429
                     try {
                         const lapsResponse = await fetch(`https://api.openf1.org/v1/laps?session_key=${race.session_key}&lap_duration>=0`);
                         if (!lapsResponse.ok) {
                             console.warn(`Erro ao buscar voltas para a sessão de Corrida ${race.session_key}: ${lapsResponse.statusText}`);
-                            return null;
+                            return null; // Retorna null em caso de erro na requisição
                         }
                         const laps = await lapsResponse.json();
 
@@ -97,9 +102,14 @@ function Qualifying() {
                             }
                         }
 
-                        if (!fastestLap) return null;
+                        if (!fastestLap) return null; // Retorna null se nenhuma volta mais rápida for encontrada
 
+                        await delay(50); // Pequeno delay antes de buscar os dados do piloto
                         const driverResponse = await fetch(`https://api.openf1.org/v1/drivers?driver_number=${fastestLap.driver_number}&session_key=${race.session_key}`);
+                        if (!driverResponse.ok) {
+                            console.warn(`Erro ao buscar dados do piloto ${fastestLap.driver_number} para a sessão ${race.session_key}: ${driverResponse.statusText}`);
+                            return null; // Retorna null se a busca de dados do piloto falhar
+                        }
                         const driverData = await driverResponse.json();
                         const driverName = driverData.length > 0 ? driverData[0].broadcast_name : 'Desconhecido';
 
@@ -107,7 +117,7 @@ function Qualifying() {
                             session_key: race.session_key,
                             driverName: driverName,
                             lapTime: fastestLap.lap_duration,
-                            teamColour: driverData.length > 0 ? driverData[0].team_colour : '666666' // Default grey color
+                            teamColour: driverData.length > 0 ? driverData[0].team_colour : '666666' // Cor padrão cinza
                         };
                     } catch (innerError) {
                         console.error(`Erro ao processar sessão de Corrida ${race.session_key}:`, innerError);
@@ -126,7 +136,8 @@ function Qualifying() {
 
                 // --- FETCHING BEST LAPS FOR QUALIFYING SESSIONS ---
                 const qualifySessions = fetchedSessions.filter(session => session.session_type === 'Qualifying');
-                const qualifyFastestLapsPromises = qualifySessions.map(async (qualify) => {
+                const qualifyFastestLapsPromises = qualifySessions.map(async (qualify, index) => {
+                    await delay(index * 250); // Adiciona um delay para evitar 429
                     try {
                         const lapsResponse = await fetch(`https://api.openf1.org/v1/laps?session_key=${qualify.session_key}&lap_duration>=0`);
                         if (!lapsResponse.ok) {
@@ -144,7 +155,12 @@ function Qualifying() {
 
                         if (!fastestLap) return null;
 
+                        await delay(50); // Pequeno delay antes de buscar os dados do piloto
                         const driverResponse = await fetch(`https://api.openf1.org/v1/drivers?driver_number=${fastestLap.driver_number}&session_key=${qualify.session_key}`);
+                        if (!driverResponse.ok) {
+                            console.warn(`Erro ao buscar dados do piloto ${fastestLap.driver_number} para a sessão ${qualify.session_key}: ${driverResponse.statusText}`);
+                            return null;
+                        }
                         const driverData = await driverResponse.json();
                         const driverName = driverData.length > 0 ? driverData[0].broadcast_name : 'Desconhecido';
 
@@ -152,7 +168,7 @@ function Qualifying() {
                             session_key: qualify.session_key,
                             driverName: driverName,
                             lapTime: fastestLap.lap_duration,
-                            teamColour: driverData.length > 0 ? driverData[0].team_colour : '666666' // Default grey color
+                            teamColour: driverData.length > 0 ? driverData[0].team_colour : '666666' // Cor padrão cinza
                         };
                     } catch (innerError) {
                         console.error(`Erro ao processar sessão de Qualifying ${qualify.session_key}:`, innerError);
@@ -219,13 +235,14 @@ function Qualifying() {
                         </div>
 
                         {/* --- Race Session Cards --- */}
-                        <article>
+                        {/* Adicionei a classe "qualifying-cards-container" aqui para consistência no estilo */}
+                        <article className="qualifying-cards-container">
                             {loading ?
                                 <Loading /> :
                                 <>
                                     {raceSessionsFiltered.map((session) => (
                                         <div
-                                            className="qualifying-card" // Use new card class
+                                            className="qualifying-card"
                                             key={session.session_key}
                                             onClick={() =>
                                                 setFlippedCardKey(
@@ -234,13 +251,14 @@ function Qualifying() {
                                             }
                                         >
                                             <div
-                                                className={`qualifying-card-inner ${flippedCardKey === session.session_key ? "is-flipped" : ""}`} // Use new inner class
+                                                className={`qualifying-card-inner ${flippedCardKey === session.session_key ? "is-flipped" : ""}`}
                                             >
+                                                {/* --- Front of the Card (Session Info) --- */}
                                                 <div
-                                                    className="qualifying-card-front" // Use new front class
+                                                    className="qualifying-card-front"
                                                 >
-                                                   <p>Cidade: {session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
-                                <p>País: {session.country_name}({session.country_code}) </p>
+                                                    <p>Cidade: {session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
+                                                    <p>País: {session.country_name}({session.country_code}) </p>
                                                     <p>
                                                         Data: {new Date(session.date_start).toLocaleString('pt-BR', {
                                                             day: '2-digit', month: '2-digit', year: 'numeric',
@@ -251,16 +269,17 @@ function Qualifying() {
 
                                                 {/* --- Back of the Card (Best Lap Time) --- */}
                                                 <div
-                                                    className="qualifying-card-back" // Use new back class
-                                                    style={{ backgroundColor: `#${raceFastestLapsData[session.session_key]?.teamColour || '21212c'}` }} // Team color or default
+                                                    className="qualifying-card-back"
+                                                    style={{ backgroundColor: `#${raceFastestLapsData[session.session_key]?.teamColour || '21212c'}` }}
                                                 >
                                                     {raceFastestLapsData[session.session_key] ? (
                                                         <>
                                                             <div className="qualifying-best-lap-background"
-                                                                 style={{ color: `#${raceFastestLapsData[session.session_key].teamColour}28` }}>
+                                                                 // Adicionado '?.teamColour' para segurança
+                                                                 style={{ color: `#${raceFastestLapsData[session.session_key]?.teamColour}28` }}>
                                                             </div>
                                                             <p>Melhor Volta: </p>
-                                                            <p>{raceFastestLapsData[session.session_key].driverName} - {formatLapTime(raceFastestLapsData[session.session_key].lapTime)}</p>
+                                                            <p>{raceFastestLapsData[session.session_key]?.driverName} - {formatLapTime(raceFastestLapsData[session.session_key]?.lapTime)}</p>
                                                         </>
                                                     ) : (
                                                         <p>Melhor Volta: N/A ou Carregando</p>
@@ -275,13 +294,13 @@ function Qualifying() {
 
                         <h1 className="title">Qualifying - F1 {year}</h1>
                         {error && <p className="error">Error: {error}</p>}
-                        <article className="qualifying-cards-container"> {/* Apply the new container class */}
+                        <article className="qualifying-cards-container">
                             {loading ?
                                 <Loading /> :
                                 <>
                                     {qualifySessionsFiltered.map((session) => (
                                         <div
-                                            className="qualifying-card" // Use new card class
+                                            className="qualifying-card"
                                             key={session.session_key}
                                             onClick={() =>
                                                 setFlippedCardKey(
@@ -290,14 +309,14 @@ function Qualifying() {
                                             }
                                         >
                                             <div
-                                                className={`qualifying-card-inner ${flippedCardKey === session.session_key ? "is-flipped" : ""}`} // Use new inner class
+                                                className={`qualifying-card-inner ${flippedCardKey === session.session_key ? "is-flipped" : ""}`}
                                             >
                                                 {/* --- Front of the Card (Session Info) --- */}
                                                 <div
-                                                    className="qualifying-card-front" // Use new front class
+                                                    className="qualifying-card-front"
                                                 >
-                                                       <p>Cidade: {session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
-                                <p>País: {session.country_name}({session.country_code}) </p>
+                                                    <p>Cidade: {session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
+                                                    <p>País: {session.country_name}({session.country_code}) </p>
                                                     <p>
                                                         Data: {new Date(session.date_start).toLocaleString('pt-BR', {
                                                             day: '2-digit', month: '2-digit', year: 'numeric',
@@ -307,17 +326,17 @@ function Qualifying() {
                                                 </div>
 
                                                 <div
-                                                    className="qualifying-card-back" // Use new back class
-                                                    style={{ backgroundColor: `#${qualifyingFastestLapsData[session.session_key]?.teamColour || '21212c'}` }} // Team color or default
+                                                    className="qualifying-card-back"
+                                                    style={{ backgroundColor: `#${qualifyingFastestLapsData[session.session_key]?.teamColour || '21212c'}` }}
                                                 >
                                                     {qualifyingFastestLapsData[session.session_key] ? (
                                                         <>
-                                                            <div className="qualifying-best-lap-background" // Use new background class
-                                                                 style={{ color: `#${qualifyingFastestLapsData[session.session_key].teamColour}28` }}>
-                                                                {formatLapTime(qualifyingFastestLapsData[session.session_key].lapTime)}
-                                                            </div>
+                                                            <div className="qualifying-best-lap-background"
+                                                                 // Adicionado '?.teamColour' para segurança
+                                                                 style={{ color: `#${qualifyingFastestLapsData[session.session_key]?.teamColour}28` }}>
                                                             <p>Melhor Volta: </p>
-                                                            <p>{raceFastestLapsData[session.session_key].driverName} - {formatLapTime(raceFastestLapsData[session.session_key].lapTime)}</p>
+                                                            <p>{qualifyingFastestLapsData[session.session_key]?.driverName} - {formatLapTime(qualifyingFastestLapsData[session.session_key]?.lapTime)}</p>
+                                                            </div>
                                                         </>
                                                     ) : (
                                                         <p>Melhor Volta: N/A ou Carregando</p>
