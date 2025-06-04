@@ -19,8 +19,8 @@ import { AuthProvider } from './context/AuthContext.jsx'; // Ajuste o caminho se
 function App() {
   return (
     <>
-      <Analytics/>
-      <SpeedInsights/>
+      <Analytics>
+      <SpeedInsights>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -37,6 +37,8 @@ function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      </SpeedInsights>
+      </Analytics>
     </>
   );
 }
