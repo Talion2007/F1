@@ -6,13 +6,20 @@ article {
   gap: 1em;
 }
 
-    button:active{
-  transform: scale(0.1em);
-  transition: 1s;
+button {
+  /* Your default button styles */
+  transform: scale(1); /* Ensure a default scale */
+  transition: transform 0.3s ease; /* Smooth transition for all states */
 }
 
-button {
-  transition: 1s;
+button:active {
+  transform: scale(0.9); /* Slightly decrease the size */
+  transition: transform 0.1s ease; /* Quick transition when active */
+}
+
+/* If you want it to snap back immediately after :active */
+button:not(:active) {
+  transition: transform 0.3s ease; /* Transition back when not active */
 }
 
 .profile {
