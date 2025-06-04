@@ -5,82 +5,184 @@ import { useState, useEffect } from "react";
 import { useAuth } from '../context/AuthContext.jsx';
 import { Link } from "react-router-dom";
 import "../styles/Page.css";
+import "../styles/FlipCard.css"; // Import the new CSS file
+
+// Helper function to format seconds into MM:SS.mmm
+const formatLapTime = (seconds) => {
+    if (typeof seconds !== 'number' || isNaN(seconds)) {
+        return "N/A";
+    }
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const milliseconds = Math.round((remainingSeconds - Math.floor(remainingSeconds)) * 1000);
+
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(Math.floor(remainingSeconds)).padStart(2, '0');
+    const formattedMilliseconds = String(milliseconds).padStart(3, '0');
+
+    return `${formattedMinutes}:${formattedSeconds}.${formattedMilliseconds}`;
+};
 
 function Qualifying() {
-    // === INÍCIO DAS MODIFICAÇÕES ===
-
-    // Mover a declaração de 'year' para o topo do componente
-    // para que seja acessível por outros useEffects (como o de SEO).
     const [year, setYear] = useState(() => {
         const saveYear = localStorage.getItem('Year Key');
-        return saveYear ? JSON.parse(saveYear) : "2025";
+        return saveYear ? JSON.parse(saveYear) : "2024"; // Changed default year to 2024 for more data
     });
 
-    // --- SEO: Gerenciamento do Título da Página e Meta Descrição ---
+    // --- SEO: Page Title and Meta Description Management ---
     useEffect(() => {
-        // Define o título da página, incluindo o ano para melhor SEO
         document.title = `Qualifying e Corridas - Calendario ${year} | Fórmula 1 - Statistics`;
 
-        // Gerencia a meta description: Cria se não existir, atualiza se existir
         let metaDescription = document.querySelector('meta[name="description"]');
         if (!metaDescription) {
             metaDescription = document.createElement('meta');
             metaDescription.name = 'description';
             document.head.appendChild(metaDescription);
         }
-        // Conteúdo dinâmico para a meta description, incluindo o ano
         metaDescription.content = `Confira os resultados das sessões de Classificação (Qualifying) e o calendário das Corridas da Fórmula 1 para o ano de ${year}. Veja datas, horários, circuitos e locais.`;
 
-        // Função de limpeza: Remove a meta tag quando o componente é desmontado
         return () => {
             if (metaDescription && metaDescription.parentNode) {
                 metaDescription.parentNode.removeChild(metaDescription);
             }
         };
-    }, [year]); // Dependência do 'year' para que o título e a descrição se atualizem com o ano
+    }, [year]);
 
-    // === FIM DAS MODIFICAÇÕES DE SEO ===
-
-    const { currentUser } = useAuth(); // Agora 'user' é 'currentUser' do contexto
-    const [users, setUsers] = useState(() => {
-        const saveUsers = localStorage.getItem('Qualify Key');
-        return saveUsers ? JSON.parse(saveUsers) : [];
+    const { currentUser } = useAuth();
+    const [sessions, setSessions] = useState(() => { // Renamed from users to sessions for clarity
+        const savedSessions = localStorage.getItem('Qualify Key');
+        return savedSessions ? JSON.parse(savedSessions) : [];
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
+
+    const [flippedCardKey, setFlippedCardKey] = useState(null);
+
+    // State to store fastest lap data for Qualifying sessions
+    const [qualifyingFastestLapsData, setQualifyingFastestLapsData] = useState({});
+
+    // State to store fastest lap data for Race sessions
+    const [raceFastestLapsData, setRaceFastestLapsData] = useState({});
+
 
     useEffect(() => {
-        async function fetchUsers() {
+        async function fetchSessionData() {
             try {
                 setLoading(true);
+                setError(null);
+
                 const response = await fetch(`https://api.openf1.org/v1/sessions?year=${year}`);
                 if (!response.ok) {
-                    throw new Error("Fudeu");
+                    throw new Error(`Erro ao buscar sessões: ${response.statusText}`);
                 }
-                const rocamboles = await response.json();
-                setUsers(rocamboles);
-                localStorage.setItem('Qualify Key', JSON.stringify(rocamboles));
+                const fetchedSessions = await response.json();
+                setSessions(fetchedSessions);
+                localStorage.setItem('Qualify Key', JSON.stringify(fetchedSessions));
 
-            } catch (error) {
-                setError(error.message);
+                // --- FETCHING BEST LAPS FOR RACE SESSIONS ---
+                const raceSessions = fetchedSessions.filter(session => session.session_name === 'Race');
+                const raceFastestLapsPromises = raceSessions.map(async (race) => {
+                    try {
+                        const lapsResponse = await fetch(`https://api.openf1.org/v1/laps?session_key=${race.session_key}&lap_duration>=0`);
+                        if (!lapsResponse.ok) {
+                            console.warn(`Erro ao buscar voltas para a sessão de Corrida ${race.session_key}: ${lapsResponse.statusText}`);
+                            return null;
+                        }
+                        const laps = await lapsResponse.json();
+
+                        let fastestLap = null;
+                        for (const lap of laps) {
+                            if (lap.lap_duration && (fastestLap === null || lap.lap_duration < fastestLap.lap_duration)) {
+                                fastestLap = lap;
+                            }
+                        }
+
+                        if (!fastestLap) return null;
+
+                        const driverResponse = await fetch(`https://api.openf1.org/v1/drivers?driver_number=${fastestLap.driver_number}&session_key=${race.session_key}`);
+                        const driverData = await driverResponse.json();
+                        const driverName = driverData.length > 0 ? driverData[0].broadcast_name : 'Desconhecido';
+
+                        return {
+                            session_key: race.session_key,
+                            driverName: driverName,
+                            lapTime: fastestLap.lap_duration,
+                            teamColour: driverData.length > 0 ? driverData[0].team_colour : '666666' // Default grey color
+                        };
+                    } catch (innerError) {
+                        console.error(`Erro ao processar sessão de Corrida ${race.session_key}:`, innerError);
+                        return null;
+                    }
+                });
+
+                const raceResults = await Promise.all(raceFastestLapsPromises);
+                const newRaceFastestLapsData = {};
+                raceResults.forEach(result => {
+                    if (result) {
+                        newRaceFastestLapsData[result.session_key] = result;
+                    }
+                });
+                setRaceFastestLapsData(newRaceFastestLapsData);
+
+                // --- FETCHING BEST LAPS FOR QUALIFYING SESSIONS ---
+                const qualifySessions = fetchedSessions.filter(session => session.session_type === 'Qualifying');
+                const qualifyFastestLapsPromises = qualifySessions.map(async (qualify) => {
+                    try {
+                        const lapsResponse = await fetch(`https://api.openf1.org/v1/laps?session_key=${qualify.session_key}&lap_duration>=0`);
+                        if (!lapsResponse.ok) {
+                            console.warn(`Erro ao buscar voltas para a sessão de Qualifying ${qualify.session_key}: ${lapsResponse.statusText}`);
+                            return null;
+                        }
+                        const laps = await lapsResponse.json();
+
+                        let fastestLap = null;
+                        for (const lap of laps) {
+                            if (lap.lap_duration && (fastestLap === null || lap.lap_duration < fastestLap.lap_duration)) {
+                                fastestLap = lap;
+                            }
+                        }
+
+                        if (!fastestLap) return null;
+
+                        const driverResponse = await fetch(`https://api.openf1.org/v1/drivers?driver_number=${fastestLap.driver_number}&session_key=${qualify.session_key}`);
+                        const driverData = await driverResponse.json();
+                        const driverName = driverData.length > 0 ? driverData[0].broadcast_name : 'Desconhecido';
+
+                        return {
+                            session_key: qualify.session_key,
+                            driverName: driverName,
+                            lapTime: fastestLap.lap_duration,
+                            teamColour: driverData.length > 0 ? driverData[0].team_colour : '666666' // Default grey color
+                        };
+                    } catch (innerError) {
+                        console.error(`Erro ao processar sessão de Qualifying ${qualify.session_key}:`, innerError);
+                        return null;
+                    }
+                });
+
+                const qualifyResults = await Promise.all(qualifyFastestLapsPromises);
+                const newQualifyingFastestLapsData = {};
+                qualifyResults.forEach(result => {
+                    if (result) {
+                        newQualifyingFastestLapsData[result.session_key] = result;
+                    }
+                });
+                setQualifyingFastestLapsData(newQualifyingFastestLapsData);
+
+
+            } catch (err) {
+                setError(err.message);
             } finally {
                 setLoading(false);
             }
         }
-        fetchUsers();
+        fetchSessionData();
     }, [year]);
 
-    console.log(error);
+    console.log(error); // Keep this for debugging if needed
 
-    const raceSession = users.filter((user) => user.session_name === 'Race');
-    // Você tinha 'qualifySession = users.filter((user) => user.session_type === 'Qualifying')'
-    // Mas no JSX está iterando sobre 'users' direto no segundo article.
-    // Vamos manter a variável qualifySession para clareza, mas a iteração abaixo precisa ser sobre ela se for o caso.
-    // Se o objetivo é mostrar *todas* as sessões para o usuário logado no segundo bloco, 'users' está correto.
-    // Presumo que o segundo bloco é para 'Qualifying', então vou usar 'qualifySession' lá.
-    const qualifySession = users.filter((user) => user.session_type === 'Qualifying');
-
+    const raceSessionsFiltered = sessions.filter((session) => session.session_name === 'Race');
+    const qualifySessionsFiltered = sessions.filter((session) => session.session_type === 'Qualifying');
 
     useEffect(() => {
         localStorage.setItem('Year Key', JSON.stringify(year));
@@ -90,93 +192,142 @@ function Qualifying() {
         <>
             <Header />
             <section>
-                {!currentUser ? ( // Se não houver usuário logado
+                {!currentUser ? (
                     <div className="LoginMessage Block">
                         <div>
                             <h1 className="title">Corridas e Qualifying - F1</h1>
-                            <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3> {/* Traduzido aqui */}
+                            <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3>
                         </div>
                         <div className="buttons">
                             <button className="LoginButton">
                                 <Link to="/login">Login</Link>
                             </button>
                             <button className="LoginButton Register">
-                                <Link to="/register">Registrar</Link> {/* Traduzido aqui */}
+                                <Link to="/register">Registrar</Link>
                             </button>
                         </div>
                     </div>
-                ) : ( // Se houver usuário logado
+                ) : (
                     <>
                         <div className="container">
-                            <h1 className="title">Corridas - F1 {year}</h1> {/* Traduzido aqui */}
-
-                            <select value={year} onChange={(e) => setYear(e.target.value)} title="Selecione o ano para ver as corridas e qualificações de F1"> {/* Adicionado title para acessibilidade e SEO */}
-                                <option>2025</option>
-                                <option>2024</option>
-                                <option>2023</option>
+                            <h1 className="title">Corridas - F1 {year}</h1>
+                            <select value={year} onChange={(e) => setYear(e.target.value)} title="Selecione o ano para ver as corridas e qualificações de F1">
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
                             </select>
                         </div>
 
+                        {/* --- Race Session Cards --- */}
                         <article>
                             {loading ?
                                 <Loading /> :
-                                <>{raceSession.map((user) => (
-                                    <div key={user.circuit_key} className="divRaces">
-                                        <p>Cidade: {user.location} - Circuito: {user.circuit_short_name} - <strong>{user.session_name}</strong></p> {/* Traduzido aqui */}
-                                        <p>País: {user.country_name}({user.country_code}) </p> {/* Traduzido aqui */}
-                                        <p>
-                                            {new Date(user.date_start).toLocaleString('pt-BR', { // <--- Alterado para 'pt-BR'
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit',
-                                                hour12: false,
-                                            })} - {new Date(user.date_end).toLocaleString('pt-BR', { // <--- Alterado para 'pt-BR'
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit',
-                                                hour12: false,
-                                            })}
-                                        </p>
-                                    </div>
-                                ))}</>}
+                                <>
+                                    {raceSessionsFiltered.map((session) => (
+                                        <div
+                                            className="qualifying-card" // Use new card class
+                                            key={session.session_key}
+                                            onClick={() =>
+                                                setFlippedCardKey(
+                                                    flippedCardKey === session.session_key ? null : session.session_key
+                                                )
+                                            }
+                                        >
+                                            <div
+                                                className={`qualifying-card-inner ${flippedCardKey === session.session_key ? "is-flipped" : ""}`} // Use new inner class
+                                            >
+                                                <div
+                                                    className="qualifying-card-front" // Use new front class
+                                                >
+                                                   <p>Cidade: {session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
+                                <p>País: {session.country_name}({session.country_code}) </p>
+                                                    <p>
+                                                        Data: {new Date(session.date_start).toLocaleString('pt-BR', {
+                                                            day: '2-digit', month: '2-digit', year: 'numeric',
+                                                            hour: '2-digit', minute: '2-digit', hour12: false,
+                                                        })}
+                                                    </p>
+                                                </div>
+
+                                                {/* --- Back of the Card (Best Lap Time) --- */}
+                                                <div
+                                                    className="qualifying-card-back" // Use new back class
+                                                    style={{ backgroundColor: `#${raceFastestLapsData[session.session_key]?.teamColour || '21212c'}` }} // Team color or default
+                                                >
+                                                    {raceFastestLapsData[session.session_key] ? (
+                                                        <>
+                                                            <div className="qualifying-best-lap-background"
+                                                                 style={{ color: `#${raceFastestLapsData[session.session_key].teamColour}28` }}>
+                                                            </div>
+                                                            <p>Melhor Volta: </p>
+                                                            <p>{raceFastestLapsData[session.session_key].driverName} - {formatLapTime(raceFastestLapsData[session.session_key].lapTime)}</p>
+                                                        </>
+                                                    ) : (
+                                                        <p>Melhor Volta: N/A ou Carregando</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            }
                         </article>
 
                         <h1 className="title">Qualifying - F1 {year}</h1>
                         {error && <p className="error">Error: {error}</p>}
-                        <article>
+                        <article className="qualifying-cards-container"> {/* Apply the new container class */}
                             {loading ?
                                 <Loading /> :
-                                <>{qualifySession.map((user) => ( // Alterado de 'users.map' para 'qualifySession.map'
-                                    <div key={user.session_key} className="divRaces">
-                                        <p>Cidade: {user.location} - Circuito: {user.circuit_short_name} - <strong>{user.session_name}</strong></p> {/* Traduzido aqui */}
-                                        <p>País: {user.country_name}({user.country_code}) </p> {/* Traduzido aqui */}
-                                        <p>
-                                            {new Date(user.date_start).toLocaleString('pt-BR', { // <--- Alterado para 'pt-BR'
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit',
-                                                hour12: false,
-                                            })} - {new Date(user.date_end).toLocaleString('pt-BR', { // <--- Alterado para 'pt-BR'
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit',
-                                                hour12: false,
-                                            })}
-                                        </p>
-                                    </div>
-                                ))}</>}
+                                <>
+                                    {qualifySessionsFiltered.map((session) => (
+                                        <div
+                                            className="qualifying-card" // Use new card class
+                                            key={session.session_key}
+                                            onClick={() =>
+                                                setFlippedCardKey(
+                                                    flippedCardKey === session.session_key ? null : session.session_key
+                                                )
+                                            }
+                                        >
+                                            <div
+                                                className={`qualifying-card-inner ${flippedCardKey === session.session_key ? "is-flipped" : ""}`} // Use new inner class
+                                            >
+                                                {/* --- Front of the Card (Session Info) --- */}
+                                                <div
+                                                    className="qualifying-card-front" // Use new front class
+                                                >
+                                                       <p>Cidade: {session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
+                                <p>País: {session.country_name}({session.country_code}) </p>
+                                                    <p>
+                                                        Data: {new Date(session.date_start).toLocaleString('pt-BR', {
+                                                            day: '2-digit', month: '2-digit', year: 'numeric',
+                                                            hour: '2-digit', minute: '2-digit', hour12: false,
+                                                        })}
+                                                    </p>
+                                                </div>
+
+                                                <div
+                                                    className="qualifying-card-back" // Use new back class
+                                                    style={{ backgroundColor: `#${qualifyingFastestLapsData[session.session_key]?.teamColour || '21212c'}` }} // Team color or default
+                                                >
+                                                    {qualifyingFastestLapsData[session.session_key] ? (
+                                                        <>
+                                                            <div className="qualifying-best-lap-background" // Use new background class
+                                                                 style={{ color: `#${qualifyingFastestLapsData[session.session_key].teamColour}28` }}>
+                                                                {formatLapTime(qualifyingFastestLapsData[session.session_key].lapTime)}
+                                                            </div>
+                                                            <p>Melhor Volta: </p>
+                                                            <p>{raceFastestLapsData[session.session_key].driverName} - {formatLapTime(raceFastestLapsData[session.session_key].lapTime)}</p>
+                                                        </>
+                                                    ) : (
+                                                        <p>Melhor Volta: N/A ou Carregando</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            }
                         </article>
                     </>
                 )}

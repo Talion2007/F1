@@ -1,0 +1,140 @@
+/* Container for the cards within an article section */
+.qualifying-cards-container {
+  /* Changed from 'article' to specific class */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center cards horizontally */
+}
+
+/* Base Card Styles for Qualifying */
+.qualifying-card {
+  /* Changed from 'Card' */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5em;
+  perspective: 1000px;
+  height: 15vh;
+}
+
+/* The inner container that performs the rotation */
+.qualifying-card-inner {
+  /* Changed from 'CardInner' */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 25vw;
+  height: auto;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+  position: relative;
+}
+
+/* State when the qualifying card is flipped */
+.qualifying-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+/* Front and Back Faces of the Qualifying Card */
+.qualifying-card-front, /* Changed from 'CardFront' */
+.qualifying-card-back {
+  /* Changed from 'CardBack' */
+  position: absolute;
+  backface-visibility: hidden; /* Hides the back face when not flipped */
+  overflow: hidden; /* Important for the background text not to spill out */
+  width: 100%;
+  height: 17.5vh;
+  background-size: cover;
+  background-position: auto;
+  background-color: #21212c;
+  border-radius: 1em;
+  border: aliceblue 0.75em solid;
+  margin: 1em;
+  text-align: center;
+  box-shadow: #21212c 1.2em 1.2em 1.6em;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  p {
+    width: auto;
+    text-shadow: -1px 0 #15151fff, 0 1px black, 1px 0 #15151fff,
+      0 -1px #15151fff;
+    font-size: larger;
+    margin: 0%;
+    padding: 0.5em;
+  }
+}
+
+/* Specific styles for the Front of the Qualifying Card */
+.qualifying-card-front {
+  z-index: 2; /* Ensures the front is on top when not flipped */
+  background-image: url("..//assets/effect.png"); /* Example: Use your existing effect.png */
+  background-size: cover;
+  background-position: center;
+}
+
+/* Specific styles for the Back of the Qualifying Card */
+.qualifying-card-back {
+  transform: rotateY(180deg); /* Starts rotated so it appears when flipped */
+  position: relative; /* Needed for absolute positioning of background text */
+}
+
+@media screen and (max-width: 1624px) {
+  .qualifying-card-inner {
+    /* Changed from 'CardInner' */
+    width: 27.5vw;
+  }
+}
+
+@media screen and (max-width: 1279px) {
+  .qualifying-card-inner {
+    /* Changed from 'CardInner' */
+    width: 40vw;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .qualifying-card-inner {
+    /* Changed from 'CardInner' */
+    width: 75vw;
+    box-shadow: none !important;
+  }
+
+  .qualifying-card-front, /* Changed from 'CardFront' */
+.qualifying-card-back {
+    box-shadow: none !important;
+    border: #21212c 0.75em solid;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .qualifying-card-inner {
+    /* Changed from 'CardInner' */
+    width: 85vw;
+    box-shadow: none !important;
+  }
+
+  .qualifying-card-front, /* Changed from 'CardFront' */
+.qualifying-card-back {
+    box-shadow: none !important;
+    border: #21212c 0.75em solid;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .qualifying-card-inner {
+    /* Changed from 'CardInner' */
+    width: 85vw;
+    box-shadow: none !important;
+  }
+
+  .qualifying-card-front, /* Changed from 'CardFront' */
+.qualifying-card-back {
+    box-shadow: none !important;
+    border: #21212c 0.75em solid;
+  }
+}
