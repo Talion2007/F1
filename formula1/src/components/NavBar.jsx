@@ -47,16 +47,28 @@ function NavBar() {
                             <h3>Início</h3> {/* Traduzido */}
                         </Link>
                     </li>
+                    {/* Novas rotas individuais */}
                     <li>
-                        <Link to="/sprints&pratices">
-                            <h3>Sprints & Treinos</h3> {/* Traduzido */}
+                        <Link to="/practices">
+                            <h3>Treinos</h3>
                         </Link>
                     </li>
                     <li>
-                        <Link to="/races&qualifying">
-                            <h3>Corridas & Qualifying</h3> {/* Traduzido */}
+                        <Link to="/sprints">
+                            <h3>Sprints</h3>
                         </Link>
                     </li>
+                    <li>
+                        <Link to="/qualifying">
+                            <h3>Qualifying</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/races">
+                            <h3>Corridas</h3>
+                        </Link>
+                    </li>
+                    {/* Fim das novas rotas */}
                     <li>
                         <Link to="/drivers">
                             <h3>Pilotos</h3> {/* Traduzido */}
@@ -80,16 +92,28 @@ function NavBar() {
                             <h3>Início</h3> {/* Traduzido */}
                         </Link>
                     </li>
+                    {/* Novas rotas individuais */}
                     <li>
-                        <Link to="/sprints&pratices">
-                            <h3>Sprints & Treinos</h3> {/* Traduzido */}
+                        <Link to="/practices">
+                            <h3>Treinos</h3>
                         </Link>
                     </li>
                     <li>
-                        <Link to="/races&qualifying">
-                            <h3>Corridas & Qualifying</h3> {/* Traduzido */}
+                        <Link to="/sprints">
+                            <h3>Sprints</h3>
                         </Link>
                     </li>
+                    <li>
+                        <Link to="/qualifying">
+                            <h3>Qualifying</h3>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/races">
+                            <h3>Corridas</h3>
+                        </Link>
+                    </li>
+                    {/* Fim das novas rotas */}
                     <li>
                         <Link to="/drivers">
                             <h3>Pilotos</h3> {/* Traduzido */}

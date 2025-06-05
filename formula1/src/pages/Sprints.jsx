@@ -47,21 +47,21 @@ async function fetchWithRetry(url, retries = 5, delayMs = 500) {
     return null;
 }
 
-function Practices() {
+function Sprints() {
     const [year, setYear] = useState(() => {
         const savedYear = localStorage.getItem("f1SelectedYear");
         return savedYear ? JSON.parse(savedYear) : "2024";
     });
 
     useEffect(() => {
-        document.title = `Treinos Livres e Sprints - Calendario ${year} | Fórmula 1 - Statistics`;
+        document.title = `Sprints - Calendario ${year} | Fórmula 1 - Statistics`;
         let metaDescription = document.querySelector('meta[name="description"]');
         if (!metaDescription) {
             metaDescription = document.createElement("meta");
             metaDescription.name = "description";
             document.head.appendChild(metaDescription);
         }
-        metaDescription.content = `Confira os resultados das sessões de Treinos Livres e Sprints da Fórmula 1 para o ano de ${year}. Veja datas, horários, circuitos e locais.`;
+        metaDescription.content = `Confira os resultados das sessões de Sprints da Fórmula 1 para o ano de ${year}. Veja datas, horários, circuitos e locais.`;
         return () => {
             if (metaDescription && metaDescription.parentNode) {
                 metaDescription.parentNode.removeChild(metaDescription);
@@ -70,7 +70,7 @@ function Practices() {
     }, [year]);
 
     const [sessions, setSessions] = useState(() => {
-        const savedSessions = localStorage.getItem("f1PracticeAndSprintSessions");
+        const savedSessions = localStorage.getItem("f1SprintSessions"); // Changed local storage key
         return savedSessions ? JSON.parse(savedSessions) : [];
     });
     const [loading, setLoading] = useState(true);
@@ -78,11 +78,8 @@ function Practices() {
 
     const [flippedCardKey, setFlippedCardKey] = useState(null);
 
-    // States for Fastest Laps for each practice type and sprints
+    // State for Fastest Laps for sprints
     const [sprintFastestLapsData, setSprintFastestLapsData] = useState({});
-    const [fp1FastestLapsData, setFp1FastestLapsData] = useState({});
-    const [fp2FastestLapsData, setFp2FastestLapsData] = useState({});
-    const [fp3FastestLapsData, setFp3FastestLapsData] = useState({});
 
     const fetchBestLapData = useCallback(async (session, type) => {
         try {
@@ -127,7 +124,7 @@ function Practices() {
     }, []);
 
     useEffect(() => {
-        async function fetchAllPracticeAndSprintData() {
+        async function fetchSprintData() {
             try {
                 setLoading(true);
                 setError(null);
@@ -138,46 +135,23 @@ function Practices() {
                     throw new Error("No sessions found for the selected year.");
                 }
 
-                // Filter for all Free Practices and Sprints
+                // Filter for Sprints
                 const relevantSessions = fetchedSessions.filter(
                     (session) =>
                         session.session_type === "Sprint" ||
-                        session.session_name.includes("Sprint") ||
-                        (session.session_type === "Practice" &&
-                            (session.session_name === "Practice 1" ||
-                                session.session_name === "Practice 2" ||
-                                session.session_name === "Practice 3"))
+                        session.session_name.includes("Sprint") // Includes "Sprint Shootout"
                 );
 
                 setSessions(relevantSessions);
                 localStorage.setItem(
-                    "f1PracticeAndSprintSessions",
+                    "f1SprintSessions", // Changed local storage key
                     JSON.stringify(relevantSessions)
                 );
                 setLoading(false); // Display basic cards quickly
 
-                // Separate sessions into their specific types
-                const sprintSessions = relevantSessions.filter(
-                    (session) =>
-                        session.session_type === "Sprint" ||
-                        session.session_name.includes("Sprint")
-                );
-                const fp1Sessions = relevantSessions.filter(
-                    (session) =>
-                        session.session_name === "Practice 1"
-                );
-                const fp2Sessions = relevantSessions.filter(
-                    (session) =>
-                        session.session_name === "Practice 2"
-                );
-                const fp3Sessions = relevantSessions.filter(
-                    (session) =>
-                        session.session_name === "Practice 3"
-                );
-
-                // Fetch fastest laps for each session type sequentially with a delay
+                // Fetch fastest laps for sprints
                 const newSprintFastestLapsData = {};
-                for (const sprint of sprintSessions) {
+                for (const sprint of relevantSessions) { // Iterate over relevantSessions directly
                     const data = await fetchBestLapData(sprint, "Sprint");
                     if (data) {
                         newSprintFastestLapsData[data.session_key] = data;
@@ -186,43 +160,13 @@ function Practices() {
                 }
                 setSprintFastestLapsData(newSprintFastestLapsData);
 
-                const newFp1FastestLapsData = {};
-                for (const fp1 of fp1Sessions) {
-                    const data = await fetchBestLapData(fp1, "FP1");
-                    if (data) {
-                        newFp1FastestLapsData[data.session_key] = data;
-                    }
-                    await delay(200); // Introduce a 200ms delay between fetches
-                }
-                setFp1FastestLapsData(newFp1FastestLapsData);
-
-                const newFp2FastestLapsData = {};
-                for (const fp2 of fp2Sessions) {
-                    const data = await fetchBestLapData(fp2, "FP2");
-                    if (data) {
-                        newFp2FastestLapsData[data.session_key] = data;
-                    }
-                    await delay(200); // Introduce a 200ms delay between fetches
-                }
-                setFp2FastestLapsData(newFp2FastestLapsData);
-
-                const newFp3FastestLapsData = {};
-                for (const fp3 of fp3Sessions) {
-                    const data = await fetchBestLapData(fp3, "FP3");
-                    if (data) {
-                        newFp3FastestLapsData[data.session_key] = data;
-                    }
-                    await delay(200); // Introduce a 200ms delay between fetches
-                }
-                setFp3FastestLapsData(newFp3FastestLapsData);
-
             } catch (err) {
                 setError(err.message);
-                console.error("Error in fetchAllPracticeAndSprintData:", err);
+                console.error("Error in fetchSprintData:", err);
                 setLoading(false);
             }
         }
-        fetchAllPracticeAndSprintData();
+        fetchSprintData();
     }, [year, fetchBestLapData]);
 
     useEffect(() => {
@@ -235,29 +179,17 @@ function Practices() {
             session.session_type === "Sprint" ||
             session.session_name.includes("Sprint")
     );
-    const fp1SessionsDisplay = sessions.filter(
-        (session) =>
-            session.session_name === "Practice 1"
-    );
-    const fp2SessionsDisplay = sessions.filter(
-        (session) =>
-            session.session_name === "Practice 2"
-    );
-    const fp3SessionsDisplay = sessions.filter(
-        (session) =>
-            session.session_name === "Practice 3"
-    );
 
     return (
         <>
             <Header />
             <section>
                 <div className="container tags">
-                    <h1 className="title">Treinos Livres e Sprints</h1>
+                    <h1 className="title">Sprints  - F1 {year}</h1>
                     <select
                         value={year}
                         onChange={(e) => setYear(e.target.value)}
-                        title="Selecione o ano para ver os treinos livres e Sprints de F1"
+                        title="Selecione o ano para ver os Sprints de F1"
                     >
                         <option value="2025">2025</option>
                         <option value="2024">2024</option>
@@ -274,9 +206,6 @@ function Practices() {
 
                 {error && <p className="error">Error: {error}</p>}
 
-                ---
-
-                <h1 className="title">Sprints - F1 {year}</h1>
                 <article className="qualifying-cards-container">
                     {sprintSessionsDisplay.length > 0
                         ? sprintSessionsDisplay.map((session) => (
@@ -290,64 +219,10 @@ function Practices() {
                         ))
                         : !loading && <p>Nenhuma Sprint encontrada para {year}.</p>}
                 </article>
-
-                ---
-
-                {/* Seção para Treino Livre 1 */}
-                <h1 className="title">Treino Livre 1 - F1 {year}</h1>
-                <article className="qualifying-cards-container">
-                    {fp1SessionsDisplay.length > 0
-                        ? fp1SessionsDisplay.map((session) => (
-                            <SessionCard
-                                key={session.session_key}
-                                session={session}
-                                fastestLapData={fp1FastestLapsData[session.session_key]}
-                                flippedCardKey={flippedCardKey}
-                                setFlippedCardKey={setFlippedCardKey}
-                            />
-                        ))
-                        : !loading && <p>Nenhum Treino Livre 1 encontrado para {year}.</p>}
-                </article>
-
-                ---
-
-                {/* Seção para Treino Livre 2 */}
-                <h1 className="title">Treino Livre 2 - F1 {year}</h1>
-                <article className="qualifying-cards-container">
-                    {fp2SessionsDisplay.length > 0
-                        ? fp2SessionsDisplay.map((session) => (
-                            <SessionCard
-                                key={session.session_key}
-                                session={session}
-                                fastestLapData={fp2FastestLapsData[session.session_key]}
-                                flippedCardKey={flippedCardKey}
-                                setFlippedCardKey={setFlippedCardKey}
-                            />
-                        ))
-                        : !loading && <p>Nenhum Treino Livre 2 encontrado para {year}.</p>}
-                </article>
-
-                ---
-
-                {/* Seção para Treino Livre 3 */}
-                <h1 className="title">Treino Livre 3 - F1 {year}</h1>
-                <article className="qualifying-cards-container">
-                    {fp3SessionsDisplay.length > 0
-                        ? fp3SessionsDisplay.map((session) => (
-                            <SessionCard
-                                key={session.session_key}
-                                session={session}
-                                fastestLapData={fp3FastestLapsData[session.session_key]}
-                                flippedCardKey={flippedCardKey}
-                                setFlippedCardKey={setFlippedCardKey}
-                            />
-                        ))
-                        : !loading && <p>Nenhum Treino Livre 3 encontrado para {year}.</p>}
-                </article>
             </section>
             <Footer />
         </>
     );
 }
 
-export default Practices;
+export default Sprints;
