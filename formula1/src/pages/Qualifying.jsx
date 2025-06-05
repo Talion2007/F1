@@ -4,6 +4,9 @@ import Footer from "../components/Footer.jsx";
 import Loading from "../components/Loading.jsx";
 import SessionCard from "../components/SessionCard.jsx";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Link } from "react-router-dom"; // Importar Link para os botões
+import { useAuth } from '../context/AuthContext.jsx'; // Importar useAuth
+
 import "../styles/Page.css";
 import "../styles/FlipCard.css";
 
@@ -86,6 +89,8 @@ const setCachedDataWithTTL = (key, data, ttlMinutes = DEFAULT_CACHE_TTL_MINUTES)
 // --- Componente Qualifying ---
 
 function Qualifying() {
+    const { currentUser } = useAuth(); // <--- Adicione esta linha para acessar o usuário logado
+
     const [year, setYear] = useState(() => {
         const savedYear = localStorage.getItem("f1SelectedQualifyingYear"); // Nova chave
         return savedYear ? JSON.parse(savedYear) : "2025";
@@ -336,47 +341,66 @@ function Qualifying() {
         <>
             <Header />
             <section>
-                <div className="container tags">
-                    <h1 className="title">Qualificações - F1 {year}</h1>
-                    <select
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        title="Selecione o ano para ver as Qualificações de F1"
-                    >
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                    </select>
-                </div>
-
-                {showOverallLoading && !currentYearError && (
+                {!currentUser ? ( // <--- Início da lógica de autenticação
+                    <div className="LoginMessage Block">
+                        <div>
+                            <h1 className="title">Qualificações - F1 </h1>
+                            <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3>
+                        </div>
+                        <div className="buttons">
+                            <button className="LoginButton">
+                                <Link to="/login">Login</Link>
+                            </button>
+                            <button className="LoginButton Register">
+                                <Link to="/register">Registrar</Link>
+                            </button>
+                        </div>
+                    </div>
+                ) : ( // <--- Fim da lógica de autenticação, início do conteúdo da página
                     <>
-                        <br />
-                        <Loading />
-                        <p className="loading-message">
-                            Carregando dados para o ano {year}...
-                        </p>
+                        <div className="container tags">
+                            <h1 className="title">Qualificações - F1 {year}</h1>
+                            <select
+                                value={year}
+                                onChange={(e) => setYear(e.target.value)}
+                                title="Selecione o ano para ver as Qualificações de F1"
+                            >
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                            </select>
+                        </div>
+
+                        {showOverallLoading && !currentYearError && (
+                            <>
+                                <br />
+                                <Loading />
+                                <p className="loading-message">
+                                    Carregando dados para o ano {year}...
+                                </p>
+                            </>
+                        )}
+
+                        {currentYearError && <p className="error">Erro: {currentYearError}</p>}
+
+                        {!showOverallLoading && !currentYearError && (
+                            <article className="qualifying-cards-container">
+                                {qualifyingSessionsDisplay.length > 0
+                                    ? qualifyingSessionsDisplay.map((session) => (
+                                        <SessionCard
+                                            key={session.session_key}
+                                            session={session}
+                                            fastestLapData={currentYearFastestLaps[session.session_key]}
+                                            flippedCardKey={flippedCardKey}
+                                            setFlippedCardKey={setFlippedCardKey}
+                                        />
+                                    ))
+                                    : (!showOverallLoading && !currentYearError && <p>Nenhuma Qualificação encontrada para {year}.</p>)
+                                }
+                            </article>
+                        )}
                     </>
-                )}
-
-                {currentYearError && <p className="error">Erro: {currentYearError}</p>}
-
-                {!showOverallLoading && !currentYearError && (
-                    <article className="qualifying-cards-container">
-                        {qualifyingSessionsDisplay.length > 0
-                            ? qualifyingSessionsDisplay.map((session) => (
-                                <SessionCard
-                                    key={session.session_key}
-                                    session={session}
-                                    fastestLapData={currentYearFastestLaps[session.session_key]}
-                                    flippedCardKey={flippedCardKey}
-                                    setFlippedCardKey={setFlippedCardKey}
-                                />
-                            ))
-                            : (!showOverallLoading && !currentYearError && <p>Nenhuma Qualificação encontrada para {year}.</p>)
-                        }
-                    </article>
-                )}
+                )} {/* <--- Fim do conteúdo da página */}
             </section>
             <Footer />
         </>
