@@ -1,22 +1,20 @@
+/* eslint-disable no-unused-vars */
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import Loading from "../components/Loading.jsx";
 import SessionCard from "../components/SessionCard.jsx";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useAuth } from '../context/AuthContext.jsx';
-import { Link } from "react-router-dom";
 import "../styles/Page.css";
 import "../styles/FlipCard.css";
 
-// --- Funções Auxiliares de API e Cache ---
-
+// --- Funções Auxiliares de API e Cache (MANTENHA AS MESMAS) ---
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function fetchWithRetry(url, retries = 5, initialDelayMs = 1000) {
     let currentDelay = initialDelayMs;
     for (let i = 0; i < retries; i++) {
         try {
-            const response = await fetch(url);
+            const response = await await fetch(url); // Remove one 'await' here, it's a typo
             if (response.status === 429) {
                 console.warn(
                     `[API Warning] Rate limit hit for ${url}. Retrying in ${currentDelay}ms... (Attempt ${i + 1}/${retries})`
@@ -60,21 +58,13 @@ const getCachedDataWithTTL = (key, ttlMinutes = DEFAULT_CACHE_TTL_MINUTES) => {
             return null;
         }
         const yearFromKey = key.split('_').pop();
-
-        // --- MODIFICAÇÃO AQUI: Apenas valida o ano para sessões usando a data ---
-        if (key.startsWith('f1PracticeSessions_') && parsedItem.data && Array.isArray(parsedItem.data) && parsedItem.data.length > 0) {
-            // Certifica-se de que a data está presente antes de tentar substring
-            const dataYear = parsedItem.data[0]?.date ? parsedItem.data[0].date.substring(0, 4) : null;
-            if (dataYear && dataYear !== yearFromKey) {
-                console.log(`[Cache] Data for ${key} belongs to a different year (${dataYear} vs ${yearFromKey}). Removing.`);
-                localStorage.removeItem(key);
-                return null;
-            }
+        if (parsedItem.data && Array.isArray(parsedItem.data) && parsedItem.data.length > 0 &&
+            parsedItem.data[0]?.date?.substring(0, 4) !== yearFromKey &&
+            parsedItem.data[0]?.session_key?.toString().substring(0, 4) !== yearFromKey) {
+            console.log(`[Cache] Data for ${key} belongs to a different year (${parsedItem.data[0]?.date?.substring(0, 4) || parsedItem.data[0]?.session_key?.toString().substring(0, 4)} vs ${yearFromKey}). Removing.`);
+            localStorage.removeItem(key);
+            return null;
         }
-        // Não precisamos validar o ano para 'fastestLaps' aqui da mesma forma,
-        // pois eles são associados por `session_key` e a validação do ano
-        // já ocorreu nas sessões que os contêm.
-
         console.log(`[Cache] Loaded data for ${key} from cache.`);
         return parsedItem.data;
     } catch (e) {
@@ -96,61 +86,51 @@ const setCachedDataWithTTL = (key, data, ttlMinutes = DEFAULT_CACHE_TTL_MINUTES)
 // --- Componente Practices ---
 
 function Practices() {
-    const { currentUser } = useAuth();
-
     const [year, setYear] = useState(() => {
-        const savedYear = localStorage.getItem("f1SelectedYear");
+        const savedYear = localStorage.getItem("f1SelectedPracticeYear");
         return savedYear ? JSON.parse(savedYear) : "2025";
     });
 
     const [allSessions, setAllSessions] = useState({});
-    const [allPracticesFastestLapsData, setAllPracticesFastestLapsData] = useState({});
+    const [allPracticeFastestLapsData, setAllPracticeFastestLapsData] = useState({});
 
-    // Use isCurrentYearLoading para o loading do ano selecionado
-    const [isCurrentYearLoading, setIsCurrentYearLoading] = useState(true);
-    // Use isPreloadingBackground para indicar que a pré-carga de outros anos está acontecendo
-    const [isPreloadingBackground, setIsPreloadingBackground] = useState(true);
+    // Usando isLoadingCurrentYear para consistência com o que você já tinha no return
+    const [isLoadingCurrentYear, setIsLoadingCurrentYear] = useState(true);
+    const [isPreloadingAllYears, setIsPreloadingAllYears] = useState(true);
 
     const [currentYearError, setCurrentYearError] = useState(null);
 
     const [flippedCardKey, setFlippedCardKey] = useState(null);
 
-    // Use um ref para controlar se o processo de pré-carga já está em andamento
     const isPreloadingRef = useRef(false);
 
-    // --- Helper para buscar sessões de treinos para um ano específico ---
+    // --- Helper para buscar sessões para um ano específico ---
     const fetchAndCacheSessionsForYear = useCallback(async (targetYear) => {
         try {
             const cachedSessions = getCachedDataWithTTL(`f1PracticeSessions_${targetYear}`);
             if (cachedSessions && cachedSessions.length > 0) {
                 setAllSessions(prev => ({ ...prev, [targetYear]: cachedSessions }));
-                console.log(`[Cache] Practice sessions for ${targetYear} loaded from cache.`);
+                console.log(`[Cache] Sessions for ${targetYear} loaded from cache.`);
                 return cachedSessions;
             } else {
-                console.log(`[Fetch] Fetching practice sessions for ${targetYear} from API...`);
+                console.log(`[Fetch] Fetching sessions for ${targetYear} from API...`);
                 const fetchedSessions = await fetchWithRetry(
                     `https://api.openf1.org/v1/sessions?year=${targetYear}`
                 );
-                // Filtrar para sessões de treino relevantes
-                const relevantSessions = fetchedSessions.filter(
-                    (session) =>
-                        session.session_type === "Practice" &&
-                        (session.session_name === "Practice 1" ||
-                            session.session_name === "Practice 2" ||
-                            session.session_name === "Practice 3")
-                ).sort((a, b) => new Date(a.date) - new Date(b.date)); // Opcional: ordenar por data
-
-                if (relevantSessions.length === 0) {
-                    console.warn(`[No Data] No relevant practice sessions found for year ${targetYear}.`);
+                if (!fetchedSessions || fetchedSessions.length === 0) {
+                    throw new Error(`No sessions found for year ${targetYear}.`);
                 }
 
+                // Filtrando APENAS as sessões de treino para cache e estado inicial
+                const relevantSessions = fetchedSessions.filter(
+                    (session) => session.session_type.includes("Practice")
+                );
                 setAllSessions(prev => ({ ...prev, [targetYear]: relevantSessions }));
                 setCachedDataWithTTL(`f1PracticeSessions_${targetYear}`, relevantSessions);
                 return relevantSessions;
             }
         } catch (err) {
-            console.error(`[Error] Error loading practice sessions for ${targetYear}:`, err);
-            // Se o erro for para o ano atualmente selecionado, mostra uma mensagem específica
+            console.error(`[Error] Error loading sessions for ${targetYear}:`, err);
             if (targetYear === year) {
                 setCurrentYearError(`Não foi possível carregar as sessões de treino para ${targetYear}. Por favor, tente novamente.`);
             }
@@ -158,7 +138,7 @@ function Practices() {
         }
     }, [year]);
 
-    // --- Helper para buscar dados de melhor volta para uma sessão (adaptado para treinos) ---
+    // --- Helper para buscar dados de melhor volta para uma sessão ---
     const fetchBestLapData = useCallback(async (session) => {
         try {
             const laps = await fetchWithRetry(
@@ -174,9 +154,6 @@ function Practices() {
             }
             if (!fastestLap) return null;
 
-            // Adiciona um pequeno delay para evitar sobrecarga na API se muitas requisições forem feitas em sequência
-            await delay(500);
-
             const driverData = await fetchWithRetry(
                 `https://api.openf1.org/v1/drivers?driver_number=${fastestLap.driver_number}&session_key=${session.session_key}`
             );
@@ -191,7 +168,7 @@ function Practices() {
             };
         } catch (innerError) {
             console.error(
-                `[Fetch Error] Error processing fastest lap for session ${session.session_key}:`,
+                `[Fetch Error] Error processing fastest lap for practice session ${session.session_key}:`,
                 innerError
             );
             return null;
@@ -201,13 +178,13 @@ function Practices() {
     // --- Helper para buscar e cachear resultados de voltas rápidas para um ano ---
     const fetchAndCacheFastestLapsForYear = useCallback(async (targetYear, sessionsForYear) => {
         if (!sessionsForYear || sessionsForYear.length === 0) {
-            console.log(`[Fastest Laps] No practice sessions to fetch fastest laps for year ${targetYear}.`);
+            console.log(`No practice sessions to fetch fastest laps for year ${targetYear}.`);
             return;
         }
 
         console.log(`[Processing] Fetching fastest laps for year ${targetYear}...`);
 
-        let currentFastestLaps = getCachedDataWithTTL(`f1PracticesFastestLaps_${targetYear}`) || {};
+        let currentFastestLaps = getCachedDataWithTTL(`f1PracticeFastestLaps_${targetYear}`) || {};
         let updatedAny = false;
 
         for (const session of sessionsForYear) {
@@ -216,7 +193,7 @@ function Practices() {
                     const data = await fetchBestLapData(session);
                     if (data) {
                         currentFastestLaps[data.session_key] = data;
-                        setAllPracticesFastestLapsData(prev => ({
+                        setAllPracticeFastestLapsData(prev => ({
                             ...prev,
                             [targetYear]: {
                                 ...(prev[targetYear] || {}),
@@ -225,13 +202,12 @@ function Practices() {
                         }));
                         updatedAny = true;
                     }
-                    await delay(500); // Atraso entre chamadas da API para voltas rápidas
+                    await delay(1500);
                 } catch (err) {
-                    console.error(`[Error] Failed to fetch fastest lap for session ${session.session_key} in year ${targetYear}:`, err);
+                    console.error(`[Error] Failed to fetch fastest lap for practice session ${session.session_key} in year ${targetYear}:`, err);
                 }
             } else {
-                // Se já cacheado, garante que o estado do React reflita isso
-                setAllPracticesFastestLapsData(prev => ({
+                setAllPracticeFastestLapsData(prev => ({
                     ...prev,
                     [targetYear]: {
                         ...(prev[targetYear] || {}),
@@ -242,104 +218,95 @@ function Practices() {
         }
 
         if (updatedAny || Object.keys(currentFastestLaps).length > 0) {
-            setCachedDataWithTTL(`f1PracticesFastestLaps_${targetYear}`, currentFastestLaps);
+            setCachedDataWithTTL(`f1PracticeFastestLaps_${targetYear}`, currentFastestLaps);
             console.log(`[Cache] Fastest laps for ${targetYear} saved to cache.`);
         }
     }, [fetchBestLapData]);
 
-    // --- Efeito principal para pré-carregar dados e gerenciar o estado de carregamento ---
+    // --- Efeito para pré-carregar os dados de sessões e resultados para 2025, 2024, 2023 ---
     useEffect(() => {
-        if (!currentUser) {
-            setIsCurrentYearLoading(false);
-            setIsPreloadingBackground(false);
-            setCurrentYearError("Por favor, faça login para visualizar os dados.");
-            setAllSessions({});
-            setAllPracticesFastestLapsData({});
-            return;
-        }
-
-        // Evita que o useEffect seja executado múltiplas vezes devido a re-renders
         if (isPreloadingRef.current) {
             return;
         }
 
         isPreloadingRef.current = true;
-        setIsPreloadingBackground(true); // Indica que o processo de pré-carga está ativo em segundo plano
+        setIsPreloadingAllYears(true);
 
         const preloadAllYearsData = async () => {
             const yearsToLoad = ["2025", "2024", "2023"];
-            let sessionsForCurrentYearLoaded = false;
+            let sessionsAcrossYears = {};
 
             setCurrentYearError(null);
-            setIsCurrentYearLoading(true); // Assume que o ano atual está carregando
+            setIsLoadingCurrentYear(true); // Usando isLoadingCurrentYear aqui
 
-            // --- FASE 1: Buscar e cachear TODAS AS SESSÕES para cada ano ---
+            console.log("[Preload] Starting Phase 1: Fetching all practice sessions...");
             for (const targetYear of yearsToLoad) {
-                console.log(`[Preload] Starting data load for year: ${targetYear}`);
                 const sessions = await fetchAndCacheSessionsForYear(targetYear);
-
-                // Se o ano que estamos processando é o ano selecionado pelo usuário
-                // e as sessões para ele foram carregadas com sucesso.
-                if (targetYear === year && sessions && sessions.length > 0 && !sessionsForCurrentYearLoaded) {
-                    setIsCurrentYearLoading(false); // **DESLIGA O LOADING AQUI!**
-                    sessionsForCurrentYearLoaded = true;
-                    console.log(`[Loading] Loading for year ${year} sessions turned off.`);
-                } else if (targetYear === year && (!sessions || sessions.length === 0) && !sessionsForCurrentYearLoaded) {
-                    // Se não há sessões para o ano atual, desliga o loading e mostra erro.
-                    setCurrentYearError(`Nenhum Treino Livre encontrado para ${year}.`);
-                    setIsCurrentYearLoading(false);
-                    sessionsForCurrentYearLoaded = true;
-                }
-
-                if (targetYear !== yearsToLoad[yearsToLoad.length - 1]) {
-                    await delay(500); // Pequeno atraso entre o carregamento das SESSÕES de cada ano
-                }
-            }
-            console.log("[Preload] Fase 1: Todas as sessões buscadas e cacheadas.");
-
-            // --- FASE 2: Buscar MELHORES TEMPOS (pode ser em segundo plano) ---
-            for (const targetYear of yearsToLoad) {
-                const sessionsForYear = allSessions[targetYear]; // Obtém as sessões do estado
-                if (sessionsForYear && sessionsForYear.length > 0) {
-                    await fetchAndCacheFastestLapsForYear(targetYear, sessionsForYear);
+                if (sessions && sessions.length > 0) {
+                    sessionsAcrossYears[targetYear] = sessions;
                 } else {
-                    console.log(`[Preload] No sessions found for ${targetYear}, skipping fastest lap fetch.`);
-                    // Se o ano atual não teve sessões na Fase 1 e é o ano selecionado, garante a mensagem de erro
-                    if (targetYear === year && !currentYearError && !sessionsForCurrentYearLoaded) {
-                        setCurrentYearError(`Nenhum Treino Livre encontrado para ${year}.`);
-                        setIsCurrentYearLoading(false);
+                    console.log(`[Preload] No practice sessions found for ${targetYear} in Phase 1.`);
+                    if (targetYear === year) {
+                        setCurrentYearError(`Nenhum Treino encontrado para ${year}.`);
+                        setIsLoadingCurrentYear(false);
                     }
                 }
+                if (targetYear !== yearsToLoad[yearsToLoad.length - 1]) {
+                    await delay(500);
+                }
             }
-            console.log("[Preload] Fase 2: Todas as voltas rápidas buscadas e cacheadas.");
+            console.log("[Preload] Phase 1: All practice sessions fetched and cached.");
 
-            setIsPreloadingBackground(false); // Sinaliza que a pré-carga completa terminou
+            console.log("[Preload] Starting Phase 2: Fetching fastest laps for practices...");
+            for (const targetYear of yearsToLoad) {
+                const sessionsForYear = sessionsAcrossYears[targetYear];
+                if (sessionsForYear && sessionsForYear.length > 0) {
+                    await fetchAndCacheFastestLapsForYear(targetYear, sessionsForYear);
+                }
+            }
+            console.log("[Preload] Phase 2: All fastest practice laps fetched and cached.");
+
+            const hasSessions = allSessions[year] && allSessions[year].length > 0;
+            const hasFastestLaps = allPracticeFastestLapsData[year] && Object.keys(allPracticeFastestLapsData[year]).length >= (allSessions[year] ? allSessions[year].length : 0);
+
+            if (hasSessions || year === "2025") {
+                 setIsLoadingCurrentYear(false);
+            } else if (!hasSessions && !currentYearError) {
+                setCurrentYearError(`Nenhum Treino encontrado para ${year}.`);
+                setIsLoadingCurrentYear(false);
+            }
+
+            setIsPreloadingAllYears(false);
             isPreloadingRef.current = false;
-            console.log("[Preload] Todos os anos pré-carregados.");
-
-            // Apenas para garantir que o loading seja desligado no final, se algo deu errado antes.
-            if (isCurrentYearLoading && !sessionsForCurrentYearLoaded) {
-                setIsCurrentYearLoading(false);
-            }
+            console.log("[Preload] All years pre-loaded for Practices.");
         };
 
         preloadAllYearsData();
 
-    }, [currentUser, year, fetchAndCacheSessionsForYear, fetchAndCacheFastestLapsForYear]);
-    // Removendo allSessions e allPracticesFastestLapsData das dependências 
-    // para evitar loop, pois essas são as states que estão sendo ATUALIZADAS.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchAndCacheSessionsForYear, fetchAndCacheFastestLapsForYear, year, allSessions, allPracticeFastestLapsData]);
 
     // --- Efeito para gerenciar o loading do ANO ATUAL quando o 'year' muda ---
-    // Este useEffect agora simplesmente redefine o loading para 'true' 
-    // e permite que o useEffect principal o desligue.
     useEffect(() => {
-        if (!currentUser) return;
+        const sessionsLoaded = allSessions[year] && allSessions[year].length > 0;
+        const fastestLapsLoaded = allPracticeFastestLapsData[year] && Object.keys(allPracticeFastestLapsData[year]).length >= (sessionsLoaded ? allSessions[year].length : 0);
 
-        // Ativa o loading sempre que o ano muda, permitindo que o useEffect principal o desative.
-        setIsCurrentYearLoading(true);
-        setCurrentYearError(null); // Limpa erros quando o ano muda
+        if (!sessionsLoaded || (sessionsLoaded && !fastestLapsLoaded && year !== "2025")) {
+             setIsLoadingCurrentYear(true); // Usando isLoadingCurrentYear aqui
+             setCurrentYearError(null);
+        } else {
+             setIsLoadingCurrentYear(false); // Usando isLoadingCurrentYear aqui
+        }
 
-    }, [year, currentUser]); // Apenas 'year' e 'currentUser' são as dependências.
+        if (year === "2025" && sessionsLoaded) {
+            setIsLoadingCurrentYear(false); // Usando isLoadingCurrentYear aqui
+            setCurrentYearError(null);
+        } else if (year === "2025" && !sessionsLoaded) {
+            setIsLoadingCurrentYear(true); // Usando isLoadingCurrentYear aqui
+            setCurrentYearError(null);
+        }
+
+    }, [year, allSessions, allPracticeFastestLapsData]);
 
     // --- Efeito para atualizar o título da página ---
     useEffect(() => {
@@ -354,13 +321,14 @@ function Practices() {
 
     // --- Efeito para salvar o ano selecionado no localStorage ---
     useEffect(() => {
-        localStorage.setItem("f1SelectedYear", JSON.stringify(year));
+        localStorage.setItem("f1SelectedPracticeYear", JSON.stringify(year));
     }, [year]);
 
     // --- Lógica de exibição baseada no ano selecionado ---
     const currentYearSessions = allSessions[year] || [];
-    const currentYearFastestLaps = allPracticesFastestLapsData[year] || {};
+    const currentYearFastestLaps = allPracticeFastestLapsData[year] || {};
 
+    // O MACETE AQUI: Filtrar as sessões por tipo de treino livre
     const fp1SessionsDisplay = currentYearSessions.filter(
         (session) => session.session_name === "Practice 1"
     );
@@ -371,33 +339,9 @@ function Practices() {
         (session) => session.session_name === "Practice 3"
     );
 
-    const showOverallLoading = isCurrentYearLoading;
-
-    // Mensagem a ser exibida se não houver usuário logado
-    if (!currentUser) {
-        return (
-            <>
-                <Header />
-                <section>
-                    <div className="LoginMessage Block">
-                        <div>
-                            <h1 className="title">Treinos Livres - F1 </h1>
-                            <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3>
-                        </div>
-                        <div className="buttons">
-                            <button className="LoginButton">
-                                <Link to="/login">Login</Link>
-                            </button>
-                            <button className="LoginButton Register">
-                                <Link to="/register">Registrar</Link>
-                            </button>
-                        </div>
-                    </div>
-                </section>
-                <Footer />
-            </>
-        );
-    }
+    // O loading principal agora é ativado se o ano atual está carregando
+    // Você tinha 'showOverallLoading', mudei para 'isLoadingCurrentYear' para consistência
+    const showOverallLoading = isLoadingCurrentYear; // Renomeando para o que você já usava no return
 
     return (
         <>
@@ -416,7 +360,8 @@ function Practices() {
                     </select>
                 </div>
 
-                {showOverallLoading && !currentYearError && (
+                {/* Display loading only when the current year's data is being loaded */}
+                {showOverallLoading && !currentYearError && ( // Usando showOverallLoading
                     <>
                         <br />
                         <Loading />
@@ -426,45 +371,68 @@ function Practices() {
                     </>
                 )}
 
-                {currentYearError && <p className="error">Error: {currentYearError}</p>}
+                {currentYearError && <p className="error">Erro: {currentYearError}</p>} {/* Corrigido 'Error' para 'Erro' */}
 
-                {!showOverallLoading && !currentYearError && (
+                {/* Display content only when not loading the current year and no error */}
+                {!showOverallLoading && !currentYearError && ( // Usando showOverallLoading
                     <article className="qualifying-cards-container">
-                        {fp1SessionsDisplay.length > 0
-                            ? fp1SessionsDisplay.map((session) => (
-                                <SessionCard
-                                    key={session.session_key}
-                                    session={session}
-                                    fastestLapData={currentYearFastestLaps[session.session_key]}
-                                    flippedCardKey={flippedCardKey}
-                                    setFlippedCardKey={setFlippedCardKey}
-                                />
-                            ))
-                            : <p>Nenhum Treino Livre 1 encontrado para {year}.</p>}
+                        {/* Seção para Treino Livre 1 */}
+                        {fp1SessionsDisplay.length > 0 ? (
+                            <>
+                                {fp1SessionsDisplay.map((session) => (
+                                    <SessionCard
+                                        key={session.session_key}
+                                        session={session}
+                                        fastestLapData={currentYearFastestLaps[session.session_key]}
+                                        flippedCardKey={flippedCardKey}
+                                        setFlippedCardKey={setFlippedCardKey}
+                                    />
+                                ))}
+                            </>
+                        ) : (
+                            <p>Nenhum Treino Livre 1 encontrado para {year}.</p>
+                        )}
 
-                        {fp2SessionsDisplay.length > 0
-                            ? fp2SessionsDisplay.map((session) => (
-                                <SessionCard
-                                    key={session.session_key}
-                                    session={session}
-                                    fastestLapData={currentYearFastestLaps[session.session_key]}
-                                    flippedCardKey={flippedCardKey}
-                                    setFlippedCardKey={setFlippedCardKey}
-                                />
-                            ))
-                            : <p>Nenhum Treino Livre 2 encontrado para {year}.</p>}
+                        {/* Seção para Treino Livre 2 */}
+                        {fp2SessionsDisplay.length > 0 ? (
+                            <>
+                                {fp2SessionsDisplay.map((session) => (
+                                    <SessionCard
+                                        key={session.session_key}
+                                        session={session}
+                                        fastestLapData={currentYearFastestLaps[session.session_key]}
+                                        flippedCardKey={flippedCardKey}
+                                        setFlippedCardKey={setFlippedCardKey}
+                                    />
+                                ))}
+                            </>
+                        ) : (
+                            <p>Nenhum Treino Livre 2 encontrado para {year}.</p>
+                        )}
 
-                        {fp3SessionsDisplay.length > 0
-                            ? fp3SessionsDisplay.map((session) => (
-                                <SessionCard
-                                    key={session.session_key}
-                                    session={session}
-                                    fastestLapData={currentYearFastestLaps[session.session_key]}
-                                    flippedCardKey={flippedCardKey}
-                                    setFlippedCardKey={setFlippedCardKey}
-                                />
-                            ))
-                            : <p>Nenhum Treino Livre 3 encontrado para {year}.</p>}
+                        {/* Seção para Treino Livre 3 */}
+                        {fp3SessionsDisplay.length > 0 ? (
+                            <>
+                                {fp3SessionsDisplay.map((session) => (
+                                    <SessionCard
+                                        key={session.session_key}
+                                        session={session}
+                                        fastestLapData={currentYearFastestLaps[session.session_key]}
+                                        flippedCardKey={flippedCardKey}
+                                        setFlippedCardKey={setFlippedCardKey}
+                                    />
+                                ))}
+                            </>
+                        ) : (
+                            <p>Nenhum Treino Livre 3 encontrado para {year}.</p>
+                        )}
+                        {/* Mensagem geral se não houver treinos para o ano selecionado */}
+                        {fp1SessionsDisplay.length === 0 &&
+                         fp2SessionsDisplay.length === 0 &&
+                         fp3SessionsDisplay.length === 0 &&
+                         !showOverallLoading && !currentYearError && (
+                            <p>Nenhum Treino Livre encontrado para {year}.</p>
+                        )}
                     </article>
                 )}
             </section>

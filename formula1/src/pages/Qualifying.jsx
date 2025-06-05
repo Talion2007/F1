@@ -1,20 +1,16 @@
+/* eslint-disable no-unused-vars */
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import Loading from "../components/Loading.jsx";
 import SessionCard from "../components/SessionCard.jsx";
-import { useState, useEffect, useCallback } from "react";
-import { useAuth } from '../context/AuthContext.jsx';
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback, useRef } from "react";
 import "../styles/Page.css";
 import "../styles/FlipCard.css";
 
-// --- Funções Auxiliares de API e Cache ---
-
-// Função para introduzir um atraso
+// --- Funções Auxiliares de API e Cache (MANTENHA AS MESMAS) ---
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-// Função para buscar dados da API com retries e backoff exponencial
-async function fetchWithRetry(url, retries = 5, initialDelayMs = 1000) { // Aumentado o delay inicial para 1 segundo
+async function fetchWithRetry(url, retries = 5, initialDelayMs = 1000) {
     let currentDelay = initialDelayMs;
     for (let i = 0; i < retries; i++) {
         try {
@@ -24,8 +20,8 @@ async function fetchWithRetry(url, retries = 5, initialDelayMs = 1000) { // Aume
                     `[API Warning] Rate limit hit for ${url}. Retrying in ${currentDelay}ms... (Attempt ${i + 1}/${retries})`
                 );
                 await delay(currentDelay);
-                currentDelay = Math.min(currentDelay * 2, 8000); // Aumenta o delay exponencialmente, até um máximo de 8 segundos
-                continue; // Tenta novamente
+                currentDelay = Math.min(currentDelay * 2, 8000);
+                continue;
             }
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status} for ${url}`);
@@ -37,17 +33,18 @@ async function fetchWithRetry(url, retries = 5, initialDelayMs = 1000) { // Aume
                 error
             );
             if (i === retries - 1) {
-                throw error; // Lança o erro após todas as tentativas falharem
+                throw error;
             }
             await delay(currentDelay);
             currentDelay = Math.min(currentDelay * 2, 8000);
         }
     }
-    return null; // Caso todas as retries falhem e não lancem erro (ex: em caso de um continue final)
+    return null;
 }
 
-// Helper para obter dados cacheados com TTL (Time-To-Live)
-const getCachedDataWithTTL = (key, ttlMinutes = 24 * 60) => { // TTL padrão: 24 horas
+const DEFAULT_CACHE_TTL_MINUTES = 60; // 1 hora de cache
+
+const getCachedDataWithTTL = (key, ttlMinutes = DEFAULT_CACHE_TTL_MINUTES) => {
     const cachedItem = localStorage.getItem(key);
     if (!cachedItem) {
         return null;
@@ -60,17 +57,24 @@ const getCachedDataWithTTL = (key, ttlMinutes = 24 * 60) => { // TTL padrão: 24
             localStorage.removeItem(key);
             return null;
         }
+        const yearFromKey = key.split('_').pop();
+        if (parsedItem.data && Array.isArray(parsedItem.data) && parsedItem.data.length > 0 &&
+            parsedItem.data[0]?.date?.substring(0, 4) !== yearFromKey &&
+            parsedItem.data[0]?.session_key?.toString().substring(0, 4) !== yearFromKey) {
+            console.log(`[Cache] Data for ${key} belongs to a different year (${parsedItem.data[0]?.date?.substring(0, 4) || parsedItem.data[0]?.session_key?.toString().substring(0, 4)} vs ${yearFromKey}). Removing.`);
+            localStorage.removeItem(key);
+            return null;
+        }
         console.log(`[Cache] Loaded data for ${key} from cache.`);
         return parsedItem.data;
     } catch (e) {
         console.error(`[Cache Error] Error parsing cached data for ${key}:`, e);
-        localStorage.removeItem(key); // Remove cache corrompido
+        localStorage.removeItem(key);
         return null;
     }
 };
 
-// Helper para salvar dados no cache com TTL
-const setCachedDataWithTTL = (key, data) => {
+const setCachedDataWithTTL = (key, data, ttlMinutes = DEFAULT_CACHE_TTL_MINUTES) => {
     const itemToStore = {
         timestamp: Date.now(),
         data: data,
@@ -82,73 +86,59 @@ const setCachedDataWithTTL = (key, data) => {
 // --- Componente Qualifying ---
 
 function Qualifying() {
-    const { currentUser } = useAuth();
     const [year, setYear] = useState(() => {
-        const savedYear = localStorage.getItem("f1SelectedYear");
+        const savedYear = localStorage.getItem("f1SelectedQualifyingYear"); // Nova chave
         return savedYear ? JSON.parse(savedYear) : "2025";
     });
 
-    // Estados para os dados das sessões e dos melhores tempos
-    const [sessions, setSessions] = useState([]);
-    const [qualifyingFastestLapsData, setQualifyingFastestLapsData] = useState({});
+    const [allSessions, setAllSessions] = useState({});
+    const [allQualifyingFastestLapsData, setAllQualifyingFastestLapsData] = useState({}); // Nova chave
 
-    // Estados de carregamento e erro
-    const [loadingSessions, setLoadingSessions] = useState(true); // Começa como true, já que sempre tentará carregar
-    const [loadingFastestLaps, setLoadingFastestLaps] = useState(true); // Começa como true
-    const [error, setError] = useState(null);
+    const [isLoadingCurrentYearData, setIsLoadingCurrentYearData] = useState(true);
+    const [isPreloadingAllYears, setIsPreloadingAllYears] = useState(true);
 
-    // Estado para controlar qual card está virado
+    const [currentYearError, setCurrentYearError] = useState(null);
+
     const [flippedCardKey, setFlippedCardKey] = useState(null);
 
-    // Efeito para atualizar o título e a meta descrição da página
-    useEffect(() => {
-        document.title = `Qualifying - Calendário ${year} | Fórmula 1 - Statistics`;
-        const metaDescription = document.querySelector('meta[name="description"]') || document.createElement("meta");
-        if (!metaDescription.parentNode) {
-            metaDescription.name = "description";
-            document.head.appendChild(metaDescription);
+    const isPreloadingRef = useRef(false);
+
+    // --- Helper para buscar sessões para um ano específico ---
+    const fetchAndCacheSessionsForYear = useCallback(async (targetYear) => {
+        try {
+            const cachedSessions = getCachedDataWithTTL(`f1QualifyingSessions_${targetYear}`); // Nova chave
+            if (cachedSessions && cachedSessions.length > 0) {
+                setAllSessions(prev => ({ ...prev, [targetYear]: cachedSessions }));
+                console.log(`[Cache] Sessions for ${targetYear} loaded from cache.`);
+                return cachedSessions;
+            } else {
+                console.log(`[Fetch] Fetching sessions for ${targetYear} from API...`);
+                const fetchedSessions = await fetchWithRetry(
+                    `https://api.openf1.org/v1/sessions?year=${targetYear}`
+                );
+                if (!fetchedSessions || fetchedSessions.length === 0) {
+                    throw new Error(`No sessions found for year ${targetYear}.`);
+                }
+
+                const relevantSessions = fetchedSessions.filter(
+                    (session) => session.session_type === "Qualifying" // Alterado para "Qualifying"
+                );
+                setAllSessions(prev => ({ ...prev, [targetYear]: relevantSessions }));
+                setCachedDataWithTTL(`f1QualifyingSessions_${targetYear}`, relevantSessions); // Nova chave
+                return relevantSessions;
+            }
+        } catch (err) {
+            console.error(`[Error] Error loading sessions for ${targetYear}:`, err);
+            if (targetYear === year) {
+                setCurrentYearError(`Não foi possível carregar as sessões de qualificação para ${targetYear}. Por favor, tente novamente.`);
+            }
+            return [];
         }
-        metaDescription.content = `Confira os resultados das sessões de Classificação (Qualifying) da Fórmula 1 para o ano de ${year}. Veja datas, horários, circuitos e locais.`;
     }, [year]);
 
-    // Efeito para lidar com a autenticação e carregamento inicial de dados (sessões e laps do cache)
-    useEffect(() => {
-        if (!currentUser) {
-            setSessions([]);
-            setQualifyingFastestLapsData({});
-            setLoadingSessions(false);
-            setLoadingFastestLaps(false);
-            return;
-        }
-
-        // Tenta carregar do cache ao iniciar ou mudar o ano
-        const cachedSessions = getCachedDataWithTTL(`f1QualifyingSessions_${year}`);
-        if (cachedSessions) {
-            setSessions(cachedSessions);
-            setLoadingSessions(false); // Já temos as sessões
-        } else {
-            setLoadingSessions(true); // Precisamos buscar as sessões
-        }
-
-        const cachedFastestLaps = getCachedDataWithTTL(`f1QualifyingFastestLaps_${year}`);
-        if (cachedFastestLaps) {
-            setQualifyingFastestLapsData(cachedFastestLaps);
-        } else {
-            setQualifyingFastestLapsData({}); // Limpa se não tiver cache para o ano
-        }
-        setLoadingFastestLaps(true); // Sempre consideramos que vamos verificar ou buscar laps
-        setError(null);
-    }, [year, currentUser]); // Roda quando o ano ou o usuário muda
-
-    // Função useCallback para buscar dados da melhor volta de uma sessão
+    // --- Helper para buscar dados de melhor volta para uma sessão ---
     const fetchBestLapData = useCallback(async (session) => {
-        // Tenta pegar do cache local do estado primeiro para evitar chamadas duplicadas
-        if (qualifyingFastestLapsData[session.session_key]) {
-            return qualifyingFastestLapsData[session.session_key];
-        }
-
         try {
-            // Busca os laps
             const laps = await fetchWithRetry(
                 `https://api.openf1.org/v1/laps?session_key=${session.session_key}&lap_duration>=0`
             );
@@ -162,10 +152,6 @@ function Qualifying() {
             }
             if (!fastestLap) return null;
 
-            // Adiciona um delay entre a busca de laps e drivers para mitigar rate limit
-            await delay(500); // Aumentado para 500ms para ser mais seguro
-
-            // Busca os dados do piloto
             const driverData = await fetchWithRetry(
                 `https://api.openf1.org/v1/drivers?driver_number=${fastestLap.driver_number}&session_key=${session.session_key}`
             );
@@ -180,178 +166,216 @@ function Qualifying() {
             };
         } catch (innerError) {
             console.error(
-                `[Fetch Error] Error processing fastest lap for session ${session.session_key}:`,
+                `[Fetch Error] Error processing fastest lap for qualifying session ${session.session_key}:`,
                 innerError
             );
             return null;
         }
-    }, [qualifyingFastestLapsData]); // Adicionado qualifyingFastestLapsData como dependência para acessar o estado atual
+    }, []);
 
-    // Efeito para carregar as sessões de qualificação da API
-    useEffect(() => {
-        const loadQualifyingSessions = async () => {
-            if (!currentUser) return; // Não faz nada se não houver usuário autenticado
+    // --- Helper para buscar e cachear resultados de voltas rápidas para um ano ---
+    const fetchAndCacheFastestLapsForYear = useCallback(async (targetYear, sessionsForYear) => {
+        if (!sessionsForYear || sessionsForYear.length === 0) {
+            console.log(`No qualifying sessions to fetch fastest laps for year ${targetYear}.`);
+            return;
+        }
 
-            setLoadingSessions(true);
-            setError(null);
+        console.log(`[Processing] Fetching fastest laps for year ${targetYear}...`);
 
-            try {
-                // Só busca se não houver sessões já carregadas OU se o cache estiver vazio/expirado
-                if (sessions.length === 0 || !getCachedDataWithTTL(`f1QualifyingSessions_${year}`)) {
-                    console.log(`[Fetch] Fetching sessions for ${year} from API...`);
-                    const fetchedSessions = await fetchWithRetry(
-                        `https://api.openf1.org/v1/sessions?year=${year}`
-                    );
-                    if (!fetchedSessions || fetchedSessions.length === 0) {
-                        throw new Error("No sessions found for the selected year.");
+        let currentFastestLaps = getCachedDataWithTTL(`f1QualifyingFastestLaps_${targetYear}`) || {}; // Nova chave
+        let updatedAny = false;
+
+        for (const session of sessionsForYear) {
+            if (!currentFastestLaps[session.session_key]) {
+                try {
+                    const data = await fetchBestLapData(session);
+                    if (data) {
+                        currentFastestLaps[data.session_key] = data;
+                        setAllQualifyingFastestLapsData(prev => ({ // Nova chave
+                            ...prev,
+                            [targetYear]: {
+                                ...(prev[targetYear] || {}),
+                                [data.session_key]: data
+                            }
+                        }));
+                        updatedAny = true;
                     }
-                    const qualifyingSessions = fetchedSessions.filter(
-                        (session) => session.session_type === "Qualifying"
-                    );
-                    setSessions(qualifyingSessions);
-                    setCachedDataWithTTL(`f1QualifyingSessions_${year}`, qualifyingSessions);
+                    await delay(1500);
+                } catch (err) {
+                    console.error(`[Error] Failed to fetch fastest lap for qualifying session ${session.session_key} in year ${targetYear}:`, err);
                 }
-            } catch (err) {
-                setError(err.message);
-                console.error("[Error] Error loading sessions:", err);
-                setSessions([]); // Limpa as sessões em caso de erro
-            } finally {
-                setLoadingSessions(false);
+            } else {
+                setAllQualifyingFastestLapsData(prev => ({ // Nova chave
+                    ...prev,
+                    [targetYear]: {
+                        ...(prev[targetYear] || {}),
+                        [session.session_key]: currentFastestLaps[session.session_key]
+                    }
+                }));
             }
-        };
-
-        // Garante que o efeito só rode se as sessões ainda não foram carregadas para o ano atual
-        // ou se o currentUser mudou e o cache está vazio.
-        if (currentUser && (sessions.length === 0 || sessions[0]?.date?.substring(0,4) !== year)) {
-             loadQualifyingSessions();
-        } else if (currentUser && sessions.length > 0) {
-             setLoadingSessions(false); // Já temos as sessões carregadas
         }
 
-    }, [year, currentUser, sessions]); // `sessions` é uma dependência para garantir que o efeito rode se o estado `sessions` estiver vazio
+        if (updatedAny || Object.keys(currentFastestLaps).length > 0) {
+            setCachedDataWithTTL(`f1QualifyingFastestLaps_${targetYear}`, currentFastestLaps); // Nova chave
+            console.log(`[Cache] Fastest laps for ${targetYear} saved to cache.`);
+        }
+    }, [fetchBestLapData]);
 
-    // Efeito para carregar os melhores tempos de volta APÓS as sessões estarem carregadas
+    // --- Efeito para pré-carregar os dados de sessões e resultados para 2025, 2024, 2023 ---
     useEffect(() => {
-        const loadFastestLaps = async () => {
-            if (!currentUser || sessions.length === 0) {
-                setLoadingFastestLaps(false);
-                return;
-            }
-
-            // Verifica se há alguma volta faltando para buscar, ignorando as que já estão no cache do estado
-            const missingLaps = sessions.filter(
-                session => !qualifyingFastestLapsData[session.session_key]
-            );
-
-            if (missingLaps.length === 0) {
-                setLoadingFastestLaps(false); // Todas as voltas já estão no cache/estado
-                return;
-            }
-
-            setLoadingFastestLaps(true);
-            let tempFastestLapsData = { ...qualifyingFastestLapsData }; // Cria uma cópia para acumular os resultados
-
-            for (const session of missingLaps) { // Itera apenas sobre as sessões que faltam dados
-                console.log(`[Fetch] Fetching fastest lap for session ${session.session_key}...`);
-                const data = await fetchBestLapData(session);
-                if (data) {
-                    tempFastestLapsData = {
-                        ...tempFastestLapsData,
-                        [data.session_key]: data
-                    };
-                    // Atualiza o estado para que os cards mostrem o tempo assim que ele chega
-                    setQualifyingFastestLapsData(current => ({
-                        ...current,
-                        [data.session_key]: data
-                    }));
-                }
-                await delay(1200); // Aumentado o delay entre cada sessão para 1.2 segundos
-            }
-
-            // Salva o objeto completo de fastestLapsData no cache do localStorage
-            setCachedDataWithTTL(`f1QualifyingFastestLaps_${year}`, tempFastestLapsData);
-            setLoadingFastestLaps(false);
-        };
-
-        // Garante que a busca de laps só comece depois que as sessões estiverem carregadas
-        // e se ainda houver laps para buscar (não tudo em cache)
-        if (currentUser && !loadingSessions && sessions.length > 0) {
-            loadFastestLaps();
-        } else if (currentUser && !loadingSessions && sessions.length === 0 && !error) {
-            // Se as sessões carregaram e estão vazias (e não há erro), não há laps para buscar
-            setLoadingFastestLaps(false);
+        if (isPreloadingRef.current) {
+            return;
         }
 
-    }, [year, sessions, currentUser, loadingSessions, fetchBestLapData, qualifyingFastestLapsData, error]); // Adicionado dependências
+        isPreloadingRef.current = true;
+        setIsPreloadingAllYears(true);
 
-    // Renderização do componente
-    const qualifySessionsDisplay = sessions.filter(
+        const preloadAllYearsData = async () => {
+            const yearsToLoad = ["2025", "2024", "2023"];
+            let sessionsAcrossYears = {};
+
+            setCurrentYearError(null);
+            setIsLoadingCurrentYearData(true);
+
+            console.log("[Preload] Starting Phase 1: Fetching all qualifying sessions...");
+            for (const targetYear of yearsToLoad) {
+                const sessions = await fetchAndCacheSessionsForYear(targetYear);
+                if (sessions && sessions.length > 0) {
+                    sessionsAcrossYears[targetYear] = sessions;
+                } else {
+                    console.log(`[Preload] No qualifying sessions found for ${targetYear} in Phase 1.`);
+                    if (targetYear === year) {
+                        setCurrentYearError(`Nenhuma Qualificação encontrada para ${year}.`);
+                        setIsLoadingCurrentYearData(false);
+                    }
+                }
+                if (targetYear !== yearsToLoad[yearsToLoad.length - 1]) {
+                    await delay(500);
+                }
+            }
+            console.log("[Preload] Phase 1: All qualifying sessions fetched and cached.");
+
+            console.log("[Preload] Starting Phase 2: Fetching fastest laps for qualifying...");
+            for (const targetYear of yearsToLoad) {
+                const sessionsForYear = sessionsAcrossYears[targetYear];
+                if (sessionsForYear && sessionsForYear.length > 0) {
+                    await fetchAndCacheFastestLapsForYear(targetYear, sessionsForYear);
+                }
+            }
+            console.log("[Preload] Phase 2: All fastest qualifying laps fetched and cached.");
+
+            const hasSessions = allSessions[year] && allSessions[year].length > 0;
+            const hasFastestLaps = allQualifyingFastestLapsData[year] && Object.keys(allQualifyingFastestLapsData[year]).length >= (allSessions[year] ? allSessions[year].length : 0);
+
+            if (hasSessions || year === "2025") {
+                 setIsLoadingCurrentYearData(false);
+            } else if (!hasSessions && !currentYearError) {
+                setCurrentYearError(`Nenhuma Qualificação encontrada para ${year}.`);
+                setIsLoadingCurrentYearData(false);
+            }
+
+            setIsPreloadingAllYears(false);
+            isPreloadingRef.current = false;
+            console.log("[Preload] All years pre-loaded for Qualifying.");
+        };
+
+        preloadAllYearsData();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchAndCacheSessionsForYear, fetchAndCacheFastestLapsForYear, year, allSessions, allQualifyingFastestLapsData]);
+
+    // --- Efeito para gerenciar o loading do ANO ATUAL quando o 'year' muda ---
+    useEffect(() => {
+        const sessionsLoaded = allSessions[year] && allSessions[year].length > 0;
+        const fastestLapsLoaded = allQualifyingFastestLapsData[year] && Object.keys(allQualifyingFastestLapsData[year]).length >= (sessionsLoaded ? allSessions[year].length : 0);
+
+        if (!sessionsLoaded || (sessionsLoaded && !fastestLapsLoaded && year !== "2025")) {
+             setIsLoadingCurrentYearData(true);
+             setCurrentYearError(null);
+        } else {
+             setIsLoadingCurrentYearData(false);
+        }
+
+        if (year === "2025" && sessionsLoaded) {
+            setIsLoadingCurrentYearData(false);
+            setCurrentYearError(null);
+        } else if (year === "2025" && !sessionsLoaded) {
+            setIsLoadingCurrentYearData(true);
+            setCurrentYearError(null);
+        }
+
+    }, [year, allSessions, allQualifyingFastestLapsData]);
+
+    // --- Efeito para atualizar o título da página ---
+    useEffect(() => {
+        document.title = `Qualificações - Calendário ${year} | Fórmula 1 - Statistics`;
+        const metaDescription = document.querySelector('meta[name="description"]') || document.createElement("meta");
+        if (!metaDescription.parentNode) {
+            metaDescription.name = "description";
+            document.head.appendChild(metaDescription);
+        }
+        metaDescription.content = `Confira os resultados das sessões de Qualificação da Fórmula 1 para o ano de ${year}. Veja datas, horários, circuitos e locais.`;
+    }, [year]);
+
+    // --- Efeito para salvar o ano selecionado no localStorage ---
+    useEffect(() => {
+        localStorage.setItem("f1SelectedQualifyingYear", JSON.stringify(year)); // Nova chave
+    }, [year]);
+
+    // --- Lógica de exibição baseada no ano selecionado ---
+    const currentYearSessions = allSessions[year] || [];
+    const currentYearFastestLaps = allQualifyingFastestLapsData[year] || {}; // Nova chave
+
+    const qualifyingSessionsDisplay = currentYearSessions.filter(
         (session) => session.session_type === "Qualifying"
     );
+
+    const showOverallLoading = isLoadingCurrentYearData;
 
     return (
         <>
             <Header />
             <section>
-                {!currentUser ? (
-                    <div className="LoginMessage Block">
-                        <div>
-                            <h1 className="title">Qualificações - F1</h1>
-                            <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3>
-                        </div>
-                        <div className="buttons">
-                            <button className="LoginButton">
-                                <Link to="/login">Login</Link>
-                            </button>
-                            <button className="LoginButton Register">
-                                <Link to="/register">Registrar</Link>
-                            </button>
-                        </div>
-                    </div>
-                ) : (
+                <div className="container tags">
+                    <h1 className="title">Qualificações - F1 {year}</h1>
+                    <select
+                        value={year}
+                        onChange={(e) => setYear(e.target.value)}
+                        title="Selecione o ano para ver as Qualificações de F1"
+                    >
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+
+                {showOverallLoading && !currentYearError && (
                     <>
-                        <div className="container tags">
-                            <h1 className="title">Qualificações - F1 {year}</h1>
-                            <select
-                                value={year}
-                                onChange={(e) => setYear(e.target.value)}
-                                title="Selecione o ano para ver os Qualifyings de F1"
-                            >
-                                <option value="2025">2025</option>
-                                <option value="2024">2024</option>
-                                <option value="2023">2023</option>
-                            </select>
-                        </div>
-
-                        {loadingSessions && !error && (
-                            <>
-                                <br />
-                                <Loading />
-                                <p className="loading-message">Carregando sessões de qualificação...</p>
-                            </>
-                        )}
-
-                        {error && <p className="error">Error: {error}</p>}
-
-                        <article className="qualifying-cards-container">
-                            {!loadingSessions && qualifySessionsDisplay.length > 0
-                                ? qualifySessionsDisplay.map((session) => (
-                                    <SessionCard
-                                        key={session.session_key}
-                                        session={session}
-                                        fastestLapData={qualifyingFastestLapsData[session.session_key]}
-                                        flippedCardKey={flippedCardKey}
-                                        setFlippedCardKey={setFlippedCardKey}
-                                    />
-                                ))
-                                : !loadingSessions && !error && <p>Nenhuma Classificação encontrada para {year}.</p>
-                            }
-                            {/* Mensagem de carregamento dos tempos de volta, visível apenas se sessões já carregaram */}
-                            {!loadingSessions && loadingFastestLaps && sessions.length > 0 && (
-                                <p className="loading-message-small">Carregando tempos de volta mais rápidos...</p>
-                            )}
-                        </article>
+                        <br />
+                        <Loading />
+                        <p className="loading-message">
+                            Carregando dados para o ano {year}...
+                        </p>
                     </>
+                )}
+
+                {currentYearError && <p className="error">Erro: {currentYearError}</p>}
+
+                {!showOverallLoading && !currentYearError && (
+                    <article className="qualifying-cards-container">
+                        {qualifyingSessionsDisplay.length > 0
+                            ? qualifyingSessionsDisplay.map((session) => (
+                                <SessionCard
+                                    key={session.session_key}
+                                    session={session}
+                                    fastestLapData={currentYearFastestLaps[session.session_key]}
+                                    flippedCardKey={flippedCardKey}
+                                    setFlippedCardKey={setFlippedCardKey}
+                                />
+                            ))
+                            : (!showOverallLoading && !currentYearError && <p>Nenhuma Qualificação encontrada para {year}.</p>)
+                        }
+                    </article>
                 )}
             </section>
             <Footer />
