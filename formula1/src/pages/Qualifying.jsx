@@ -3,8 +3,8 @@ import Footer from "../components/Footer.jsx";
 import Loading from "../components/Loading.jsx";
 import SessionCard from "../components/SessionCard.jsx";
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from '../context/AuthContext.jsx'; // Reintroduzindo useAuth
-import { Link } from "react-router-dom"; // Reintroduzindo Link
+import { useAuth } from '../context/AuthContext.jsx';
+import { Link } from "react-router-dom";
 import "../styles/Page.css";
 import "../styles/FlipCard.css";
 
@@ -71,25 +71,31 @@ function Qualifying() {
         };
     }, [year]);
 
-    const { currentUser } = useAuth(); // Reintroduzindo o hook de autenticação
+    const { currentUser } = useAuth();
 
+    // --- MUDANÇA PRINCIPAL AQUI: Inicialização Inteligente do Estado ---
     const [sessions, setSessions] = useState(() => {
-        // Inicializa sessions a partir do localStorage APENAS se o usuário estiver logado
-        // Caso contrário, retorna um array vazio.
-        const savedSessions = localStorage.getItem("f1QualifyingSessions");
-        return currentUser && savedSessions ? JSON.parse(savedSessions) : [];
+        if (currentUser) {
+            const savedSessions = localStorage.getItem("f1QualifyingSessions");
+            const parsedSavedSessions = savedSessions ? JSON.parse(savedSessions) : [];
+            const isStoredDataForCurrentYear =
+                parsedSavedSessions.length > 0 &&
+                parsedSavedSessions[0].year === parseInt(year);
+
+            // Retorna as sessões do cache se forem válidas para o ano atual e usuário logado
+            if (isStoredDataForCurrentYear) {
+                return parsedSavedSessions;
+            }
+        }
+        return []; // Caso contrário, array vazio
     });
 
     const [loading, setLoading] = useState(() => {
-        // Inicializa loading de forma inteligente:
-        // - Se não há currentUser, não está carregando (o conteúdo restrito será exibido).
-        // - Se há currentUser, verifica o localStorage para o ano atual.
-        //   Se encontrar dados válidos, inicia como false.
-        //   Caso contrário, inicia como true para iniciar a busca.
         if (!currentUser) {
-            return false;
+            return false; // Se não logado, não está carregando
         }
-
+        
+        // Verifica se já há dados em cache válidos para o ano atual; se sim, não está carregando inicialmente
         const savedSessions = localStorage.getItem("f1QualifyingSessions");
         if (savedSessions) {
             const parsedSavedSessions = JSON.parse(savedSessions);
@@ -97,13 +103,12 @@ function Qualifying() {
                 return false; // Dados válidos em cache para o ano atual, não precisa carregar inicialmente
             }
         }
-        return true; // Precisa carregar, ou sem dados ou ano diferente
+        return true; // Se não tem cache válido, ou o ano mudou, precisa carregar
     });
+    // --- FIM DA MUDANÇA PRINCIPAL ---
 
     const [error, setError] = useState(null);
-
     const [flippedCardKey, setFlippedCardKey] = useState(null);
-
     const [qualifyingFastestLapsData, setQualifyingFastestLapsData] = useState({});
 
     const fetchBestLapData = useCallback(async (session, type) => {
@@ -164,12 +169,11 @@ function Qualifying() {
                     (session) => session.session_type === "Qualifying"
                 );
 
-                setSessions(relevantSessions);
+                setSessions(relevantSessions); // Atualiza sessões aqui
                 localStorage.setItem(
                     "f1QualifyingSessions",
                     JSON.stringify(relevantSessions)
                 );
-                // Não setamos loading para false aqui, esperamos pelos fastest laps.
 
                 const newQualifyingFastestLapsData = {};
                 for (const session of relevantSessions) {
@@ -189,34 +193,36 @@ function Qualifying() {
             }
         }
 
-        // Lógica de autenticação e carregamento de dados
+        // Lógica de autenticação e carregamento de dados DENTRO do useEffect
         if (!currentUser) {
-            setLoading(false); // Se não logado, não há carregamento de dados e limpa os estados
+            // Se deslogado, limpa os dados e define loading como false
+            setLoading(false);
             setSessions([]);
             setQualifyingFastestLapsData({});
-        } else {
-            const storedSessions = localStorage.getItem("f1QualifyingSessions");
-            const parsedStoredSessions = storedSessions ? JSON.parse(storedSessions) : [];
-            const isStoredDataForCurrentYear =
-                parsedStoredSessions.length > 0 &&
-                parsedStoredSessions[0].year === parseInt(year);
-
-            // Busca dados se:
-            // 1. Não há dados armazenados para o ano atual.
-            // 2. O estado de sessões está vazio (primeiro carregamento, ou localStorage vazio).
-            // 3. O ano mudou no seletor e os dados em estado não correspondem.
-            if (!isStoredDataForCurrentYear || sessions.length === 0 || (sessions.length > 0 && sessions[0].year !== parseInt(year))) {
-                fetchQualifyingData();
-            } else {
-                // Se o usuário está logado e já temos dados válidos em cache para o ano atual,
-                // apenas garantimos que o loading seja false e os dados sejam carregados no estado.
-                setSessions(parsedStoredSessions);
-                // Se fastestLapsData também fosse cacheado, carregaria aqui.
-                setLoading(false);
-            }
+            return; // Sai do useEffect para não tentar buscar dados
         }
 
-    }, [year, fetchBestLapData, currentUser, sessions]); // Adicionado currentUser nas dependências
+        const storedSessions = localStorage.getItem("f1QualifyingSessions");
+        const parsedStoredSessions = storedSessions ? JSON.parse(storedSessions) : [];
+        const isStoredDataForCurrentYear =
+            parsedStoredSessions.length > 0 &&
+            parsedStoredSessions[0].year === parseInt(year);
+
+        // Dispara a busca de dados da API SE:
+        // 1. Não há dados válidos em cache para o ano atual, OU
+        // 2. O estado 'sessions' está vazio (isso pode acontecer na montagem inicial se não houver cache válido), OU
+        // 3. O 'year' mudou no seletor e os dados no estado atual não correspondem.
+        if (!isStoredDataForCurrentYear || sessions.length === 0 || (sessions.length > 0 && sessions[0].year !== parseInt(year))) {
+            fetchQualifyingData();
+        }
+        // Se a condição acima for falsa, significa que os dados já estão no estado
+        // (carregados pela inicialização do useState ou já presentes de uma busca anterior),
+        // e o `loading` já foi definido como `false` pela inicialização do useState.
+        // Não precisamos fazer `setSessions` ou `setLoading(false)` novamente aqui,
+        // pois isso causaria o loop.
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [year, fetchBestLapData, currentUser]); // As dependências são importantes!
 
     useEffect(() => {
         localStorage.setItem("f1SelectedYear", JSON.stringify(year));
@@ -230,10 +236,10 @@ function Qualifying() {
         <>
             <Header />
             <section>
-                {!currentUser ? ( // Lógica de autenticação reintroduzida
+                {!currentUser ? (
                     <div className="LoginMessage Block">
                         <div>
-                            <h1 className="title">Qualifying - F1</h1>
+                            <h1 className="title">Qualificações - F1</h1>
                             <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3>
                         </div>
                         <div className="buttons">
@@ -248,7 +254,7 @@ function Qualifying() {
                 ) : (
                     <>
                         <div className="container tags">
-                            <h1 className="title">Qualifying - F1 {year}</h1>
+                            <h1 className="title">Qualificações - F1 {year}</h1>
                             <select
                                 value={year}
                                 onChange={(e) => setYear(e.target.value)}
@@ -260,7 +266,6 @@ function Qualifying() {
                             </select>
                         </div>
 
-                        {/* Loading agora aparece aqui, abaixo do seletor de ano */}
                         {loading && (
                             <>
                                 <br />
@@ -271,7 +276,7 @@ function Qualifying() {
                         {error && <p className="error">Error: {error}</p>}
 
                         <article className="qualifying-cards-container">
-                            {qualifySessionsDisplay.length > 0 && !loading // Renderiza cards APENAS se não estiver carregando
+                            {qualifySessionsDisplay.length > 0 && !loading
                                 ? qualifySessionsDisplay.map((session) => (
                                     <SessionCard
                                         key={session.session_key}
@@ -281,7 +286,7 @@ function Qualifying() {
                                         setFlippedCardKey={setFlippedCardKey}
                                     />
                                 ))
-                                : !loading && !error && <p>Nenhuma Classificação encontrada para {year}.</p> // Mostra mensagem se não estiver carregando E não houver cards
+                                : !loading && !error && <p>Nenhuma Classificação encontrada para {year}.</p>
                             }
                         </article>
                     </>

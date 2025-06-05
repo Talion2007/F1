@@ -3,8 +3,8 @@ import Footer from "../components/Footer.jsx";
 import Loading from "../components/Loading.jsx";
 import SessionCard from "../components/SessionCard.jsx";
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from '../context/AuthContext.jsx'; // Reintroduzindo useAuth
-import { Link } from "react-router-dom"; // Reintroduzindo Link
+import { useAuth } from '../context/AuthContext.jsx';
+import { Link } from "react-router-dom";
 import "../styles/Page.css";
 import "../styles/FlipCard.css";
 
@@ -71,26 +71,32 @@ function Races() {
         };
     }, [year]);
 
-    const { currentUser } = useAuth(); // Reintroduzindo o hook de autenticação
+    const { currentUser } = useAuth();
 
+    // --- MUDANÇA PRINCIPAL AQUI: Inicialização Inteligente do Estado ---
     const [sessions, setSessions] = useState(() => {
-        // Inicializa sessions a partir do localStorage APENAS se o usuário estiver logado
-        // Caso contrário, retorna um array vazio.
-        const savedSessions = localStorage.getItem("f1RaceSessions"); // Chave específica para Races
-        return currentUser && savedSessions ? JSON.parse(savedSessions) : [];
+        if (currentUser) {
+            const savedSessions = localStorage.getItem("f1RaceSessions");
+            const parsedSavedSessions = savedSessions ? JSON.parse(savedSessions) : [];
+            const isStoredDataForCurrentYear =
+                parsedSavedSessions.length > 0 &&
+                parsedSavedSessions[0].year === parseInt(year);
+
+            // Retorna as sessões do cache se forem válidas para o ano atual e usuário logado
+            if (isStoredDataForCurrentYear) {
+                return parsedSavedSessions;
+            }
+        }
+        return []; // Caso contrário, array vazio
     });
 
     const [loading, setLoading] = useState(() => {
-        // Inicializa loading de forma inteligente:
-        // - Se não há currentUser, não está carregando (o conteúdo restrito será exibido).
-        // - Se há currentUser, verifica o localStorage para o ano atual.
-        //   Se encontrar dados válidos, inicia como false.
-        //   Caso contrário, inicia como true para iniciar a busca.
         if (!currentUser) {
-            return false;
+            return false; // Se não logado, não está carregando
         }
-
-        const savedSessions = localStorage.getItem("f1RaceSessions"); // Chave específica para Races
+        
+        // Verifica se já há dados em cache válidos para o ano atual; se sim, não está carregando inicialmente
+        const savedSessions = localStorage.getItem("f1RaceSessions");
         if (savedSessions) {
             const parsedSavedSessions = JSON.parse(savedSessions);
             if (parsedSavedSessions.length > 0 && parsedSavedSessions[0].year === parseInt(year)) {
@@ -99,12 +105,11 @@ function Races() {
         }
         return true; // Precisa carregar, ou sem dados ou ano diferente
     });
+    // --- FIM DA MUDANÇA PRINCIPAL ---
 
     const [error, setError] = useState(null);
-
     const [flippedCardKey, setFlippedCardKey] = useState(null);
-
-    const [raceFastestLapsData, setRaceFastestLapsData] = useState({}); // Renomeado para raceFastestLapsData
+    const [raceFastestLapsData, setRaceFastestLapsData] = useState({});
 
     const fetchBestLapData = useCallback(async (session, type) => {
         try {
@@ -149,7 +154,7 @@ function Races() {
     }, []);
 
     useEffect(() => {
-        async function fetchRaceData() { // Renomeado para fetchRaceData
+        async function fetchRaceData() {
             setLoading(true); // Inicia o loading ao começar a busca
             setError(null);
             try {
@@ -164,59 +169,60 @@ function Races() {
                     (session) => session.session_type === "Race"
                 );
 
-                setSessions(relevantSessions);
+                setSessions(relevantSessions); // Atualiza sessões aqui
                 localStorage.setItem(
-                    "f1RaceSessions", // Chave específica para Races
+                    "f1RaceSessions",
                     JSON.stringify(relevantSessions)
                 );
-                // Não setamos loading para false aqui, esperamos pelos fastest laps.
 
-                const newRaceFastestLapsData = {}; // Renomeado
+                const newRaceFastestLapsData = {};
                 for (const session of relevantSessions) {
-                    const data = await fetchBestLapData(session, "Race"); // Tipo "Race"
+                    const data = await fetchBestLapData(session, "Race");
                     if (data) {
                         newRaceFastestLapsData[data.session_key] = data;
                     }
                     await delay(200);
                 }
-                setRaceFastestLapsData(newRaceFastestLapsData); // Renomeado
+                setRaceFastestLapsData(newRaceFastestLapsData);
 
             } catch (err) {
                 setError(err.message);
-                console.error("Error in fetchRaceData:", err); // Renomeado
+                console.error("Error in fetchRaceData:", err);
             } finally {
                 setLoading(false); // Sempre para o loading quando a busca termina (sucesso ou erro)
             }
         }
 
-        // Lógica de autenticação e carregamento de dados
+        // Lógica de autenticação e carregamento de dados DENTRO do useEffect
         if (!currentUser) {
-            setLoading(false); // Se não logado, não há carregamento de dados e limpa os estados
+            // Se deslogado, limpa os dados e define loading como false
+            setLoading(false);
             setSessions([]);
-            setRaceFastestLapsData({}); // Limpa dados de fastest laps
-        } else {
-            const storedSessions = localStorage.getItem("f1RaceSessions"); // Chave específica para Races
-            const parsedStoredSessions = storedSessions ? JSON.parse(storedSessions) : [];
-            const isStoredDataForCurrentYear =
-                parsedStoredSessions.length > 0 &&
-                parsedStoredSessions[0].year === parseInt(year);
-
-            // Busca dados se:
-            // 1. Não há dados armazenados para o ano atual.
-            // 2. O estado de sessões está vazio (primeiro carregamento, ou localStorage vazio).
-            // 3. O ano mudou no seletor e os dados em estado não correspondem.
-            if (!isStoredDataForCurrentYear || sessions.length === 0 || (sessions.length > 0 && sessions[0].year !== parseInt(year))) {
-                fetchRaceData();
-            } else {
-                // Se o usuário está logado e já temos dados válidos em cache para o ano atual,
-                // apenas garantimos que o loading seja false e os dados sejam carregados no estado.
-                setSessions(parsedStoredSessions);
-                // Se fastestLapsData também fosse cacheado, carregaria aqui.
-                setLoading(false);
-            }
+            setRaceFastestLapsData({});
+            return; // Sai do useEffect para não tentar buscar dados
         }
 
-    }, [year, fetchBestLapData, currentUser, sessions]); // Adicionado currentUser nas dependências
+        const storedSessions = localStorage.getItem("f1RaceSessions");
+        const parsedStoredSessions = storedSessions ? JSON.parse(storedSessions) : [];
+        const isStoredDataForCurrentYear =
+            parsedStoredSessions.length > 0 &&
+            parsedStoredSessions[0].year === parseInt(year);
+
+        // Dispara a busca de dados da API SE:
+        // 1. Não há dados válidos em cache para o ano atual, OU
+        // 2. O estado 'sessions' está vazio (isso pode acontecer na montagem inicial se não houver cache válido), OU
+        // 3. O 'year' mudou no seletor e os dados no estado atual não correspondem.
+        if (!isStoredDataForCurrentYear || sessions.length === 0 || (sessions.length > 0 && sessions[0].year !== parseInt(year))) {
+            fetchRaceData();
+        }
+        // Se a condição acima for falsa, significa que os dados já estão no estado
+        // (carregados pela inicialização do useState ou já presentes de uma busca anterior),
+        // e o `loading` já foi definido como `false` pela inicialização do useState.
+        // Não precisamos fazer `setSessions` ou `setLoading(false)` novamente aqui,
+        // pois isso causaria o loop.
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [year, fetchBestLapData, currentUser]); // As dependências são importantes!
 
     useEffect(() => {
         localStorage.setItem("f1SelectedYear", JSON.stringify(year));
@@ -230,7 +236,7 @@ function Races() {
         <>
             <Header />
             <section>
-                {!currentUser ? ( // Lógica de autenticação reintroduzida
+                {!currentUser ? (
                     <div className="LoginMessage Block">
                         <div>
                             <h1 className="title">Races - F1</h1>
@@ -271,17 +277,17 @@ function Races() {
                         {error && <p className="error">Error: {error}</p>}
 
                         <article className="qualifying-cards-container"> {/* Mantive essa classe, mas pode ser "race-cards-container" se houver CSS específico */}
-                            {raceSessionsDisplay.length > 0 && !loading // Renderiza cards APENAS se não estiver carregando
+                            {raceSessionsDisplay.length > 0 && !loading
                                 ? raceSessionsDisplay.map((session) => (
                                     <SessionCard
                                         key={session.session_key}
                                         session={session}
-                                        fastestLapData={raceFastestLapsData[session.session_key]} // Usando raceFastestLapsData
+                                        fastestLapData={raceFastestLapsData[session.session_key]}
                                         flippedCardKey={flippedCardKey}
                                         setFlippedCardKey={setFlippedCardKey}
                                     />
                                 ))
-                                : !loading && !error && <p>Nenhuma Corrida encontrada para {year}.</p> // Mostra mensagem se não estiver carregando E não houver cards
+                                : !loading && !error && <p>Nenhuma Corrida encontrada para {year}.</p>
                             }
                         </article>
                     </>

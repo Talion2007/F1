@@ -25,7 +25,7 @@ function NavBar() {
 
         // Limpa o event listener ao desmontar o componente
         return () => window.removeEventListener('resize', handleResize);
-    }, []); // Array de dependências vazio para rodar apenas uma vez ao montar/desmontar
+    }, [widthSize]); // Array de dependências vazio para rodar apenas uma vez ao montar/desmontar
 
 
     return (
@@ -47,28 +47,26 @@ function NavBar() {
                             <h3>Início</h3> {/* Traduzido */}
                         </Link>
                     </li>
-                    {/* Novas rotas individuais */}
                     <li>
-                        <Link to="/practices">
-                            <h3>Treinos</h3>
+                        <Link to="/pratices">
+                            <h3>Treinos</h3> {/* Traduzido */}
                         </Link>
                     </li>
                     <li>
                         <Link to="/sprints">
-                            <h3>Sprints</h3>
+                            <h3>Sprints</h3> {/* Traduzido */}
+                        </Link>
+                    </li>
+                     <li>
+                        <Link to="/races">
+                            <h3>Corridas</h3> {/* Traduzido */}
                         </Link>
                     </li>
                     <li>
                         <Link to="/qualifying">
-                            <h3>Qualifying</h3>
+                            <h3>Qualificações</h3> {/* Traduzido */}
                         </Link>
                     </li>
-                    <li>
-                        <Link to="/races">
-                            <h3>Corridas</h3>
-                        </Link>
-                    </li>
-                    {/* Fim das novas rotas */}
                     <li>
                         <Link to="/drivers">
                             <h3>Pilotos</h3> {/* Traduzido */}
@@ -92,28 +90,26 @@ function NavBar() {
                             <h3>Início</h3> {/* Traduzido */}
                         </Link>
                     </li>
-                    {/* Novas rotas individuais */}
-                    <li>
-                        <Link to="/practices">
-                            <h3>Treinos</h3>
+                      <li>
+                        <Link to="/pratices">
+                            <h3>Treinos</h3> {/* Traduzido */}
                         </Link>
                     </li>
                     <li>
                         <Link to="/sprints">
-                            <h3>Sprints</h3>
+                            <h3>Sprints</h3> {/* Traduzido */}
+                        </Link>
+                    </li>
+                     <li>
+                        <Link to="/races">
+                            <h3>Corridas</h3> {/* Traduzido */}
                         </Link>
                     </li>
                     <li>
                         <Link to="/qualifying">
-                            <h3>Qualifying</h3>
+                            <h3>Qualificações</h3> {/* Traduzido */}
                         </Link>
                     </li>
-                    <li>
-                        <Link to="/races">
-                            <h3>Corridas</h3>
-                        </Link>
-                    </li>
-                    {/* Fim das novas rotas */}
                     <li>
                         <Link to="/drivers">
                             <h3>Pilotos</h3> {/* Traduzido */}
