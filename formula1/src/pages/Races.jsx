@@ -8,136 +8,170 @@ import { Link } from "react-router-dom";
 import "../styles/Page.css";
 import "../styles/FlipCard.css";
 
-// Helper to introduce a delay for API requests
+// --- Funções Auxiliares de API e Cache (as mesmas que usamos no Qualifying.jsx) ---
+
+// Função para introduzir um atraso
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-// Helper for retries with exponential backoff
-async function fetchWithRetry(url, retries = 5, delayMs = 500) {
+// Função para buscar dados da API com retries e backoff exponencial
+async function fetchWithRetry(url, retries = 5, initialDelayMs = 1000) { // Aumentado o delay inicial para 1 segundo
+    let currentDelay = initialDelayMs;
     for (let i = 0; i < retries; i++) {
         try {
             const response = await fetch(url);
             if (response.status === 429) {
                 console.warn(
-                    `Rate limit hit for ${url}. Retrying in ${delayMs}ms... (Attempt ${i + 1
-                    }/${retries})`
+                    `[API Warning] Rate limit hit for ${url}. Retrying in ${currentDelay}ms... (Attempt ${i + 1}/${retries})`
                 );
-                await delay(delayMs);
-                delayMs *= 2; // Exponential backoff
-                continue;
+                await delay(currentDelay);
+                currentDelay = Math.min(currentDelay * 2, 8000); // Aumenta o delay exponencialmente, até um máximo de 8 segundos
+                continue; // Tenta novamente
             }
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} for ${url}`);
+                throw new Error(`HTTP error! Status: ${response.status} for ${url}`);
             }
             return response.json();
         } catch (error) {
-            if (i === retries - 1) {
-                console.error(
-                    `Failed to fetch ${url} after ${retries} attempts:`,
-                    error
-                );
-                throw error;
-            }
-            console.warn(
-                `Fetch error for ${url}. Retrying in ${delayMs}ms... (Attempt ${i + 1
-                }/${retries})`,
+            console.error(
+                `[API Error] Failed to fetch ${url} (Attempt ${i + 1}/${retries}):`,
                 error
             );
-            await delay(delayMs);
-            delayMs *= 2; // Exponential backoff
+            if (i === retries - 1) {
+                throw error; // Lança o erro após todas as tentativas falharem
+            }
+            await delay(currentDelay);
+            currentDelay = Math.min(currentDelay * 2, 8000);
         }
     }
-    return null;
+    return null; // Caso todas as retries falhem e não lancem erro (ex: em caso de um continue final)
 }
 
+// Helper para obter dados cacheados com TTL (Time-To-Live)
+const getCachedDataWithTTL = (key, ttlMinutes = 24 * 60) => { // TTL padrão: 24 horas
+    const cachedItem = localStorage.getItem(key);
+    if (!cachedItem) {
+        return null;
+    }
+    try {
+        const parsedItem = JSON.parse(cachedItem);
+        const now = Date.now();
+        if (now - parsedItem.timestamp > ttlMinutes * 60 * 1000) {
+            console.log(`[Cache] Cache for ${key} expired. Removing.`);
+            localStorage.removeItem(key);
+            return null;
+        }
+        console.log(`[Cache] Loaded data for ${key} from cache.`);
+        return parsedItem.data;
+    } catch (e) {
+        console.error(`[Cache Error] Error parsing cached data for ${key}:`, e);
+        localStorage.removeItem(key); // Remove cache corrompido
+        return null;
+    }
+};
+
+// Helper para salvar dados no cache com TTL
+const setCachedDataWithTTL = (key, data) => {
+    const itemToStore = {
+        timestamp: Date.now(),
+        data: data,
+    };
+    localStorage.setItem(key, JSON.stringify(itemToStore));
+    console.log(`[Cache] Data for ${key} saved to cache.`);
+};
+
+// --- Componente Races ---
+
 function Races() {
+    const { currentUser } = useAuth();
     const [year, setYear] = useState(() => {
         const savedYear = localStorage.getItem("f1SelectedYear");
-        return savedYear ? JSON.parse(savedYear) : "2024";
+        return savedYear ? JSON.parse(savedYear) : "2024"; // Mantido 2024 como padrão
     });
 
+    // Estados para os dados das sessões e dos melhores tempos de corrida
+    const [sessions, setSessions] = useState([]);
+    const [raceFastestLapsData, setRaceFastestLapsData] = useState({});
+
+    // Estados de carregamento e erro
+    const [loadingSessions, setLoadingSessions] = useState(true);
+    const [loadingFastestLaps, setLoadingFastestLaps] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Estado para controlar qual card está virado
+    const [flippedCardKey, setFlippedCardKey] = useState(null);
+
+    // Efeito para atualizar o título e a meta descrição da página
     useEffect(() => {
-        document.title = `Races - Calendario ${year} | Fórmula 1 - Statistics`;
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-            metaDescription = document.createElement("meta");
+        document.title = `Races - Calendário ${year} | Fórmula 1 - Statistics`;
+        const metaDescription = document.querySelector('meta[name="description"]') || document.createElement("meta");
+        if (!metaDescription.parentNode) {
             metaDescription.name = "description";
             document.head.appendChild(metaDescription);
         }
         metaDescription.content = `Confira os resultados das sessões de Corridas (Races) da Fórmula 1 para o ano de ${year}. Veja datas, horários, circuitos e locais.`;
-        return () => {
-            if (metaDescription && metaDescription.parentNode) {
-                metaDescription.parentNode.removeChild(metaDescription);
-            }
-        };
     }, [year]);
 
-    const { currentUser } = useAuth();
-
-    // --- MUDANÇA PRINCIPAL AQUI: Inicialização Inteligente do Estado ---
-    const [sessions, setSessions] = useState(() => {
-        if (currentUser) {
-            const savedSessions = localStorage.getItem("f1RaceSessions");
-            const parsedSavedSessions = savedSessions ? JSON.parse(savedSessions) : [];
-            const isStoredDataForCurrentYear =
-                parsedSavedSessions.length > 0 &&
-                parsedSavedSessions[0].year === parseInt(year);
-
-            // Retorna as sessões do cache se forem válidas para o ano atual e usuário logado
-            if (isStoredDataForCurrentYear) {
-                return parsedSavedSessions;
-            }
-        }
-        return []; // Caso contrário, array vazio
-    });
-
-    const [loading, setLoading] = useState(() => {
+    // Efeito para lidar com a autenticação e carregamento inicial de dados (sessões e laps do cache)
+    useEffect(() => {
         if (!currentUser) {
-            return false; // Se não logado, não está carregando
+            setSessions([]);
+            setRaceFastestLapsData({});
+            setLoadingSessions(false);
+            setLoadingFastestLaps(false);
+            return;
         }
-        
-        // Verifica se já há dados em cache válidos para o ano atual; se sim, não está carregando inicialmente
-        const savedSessions = localStorage.getItem("f1RaceSessions");
-        if (savedSessions) {
-            const parsedSavedSessions = JSON.parse(savedSessions);
-            if (parsedSavedSessions.length > 0 && parsedSavedSessions[0].year === parseInt(year)) {
-                return false; // Dados válidos em cache para o ano atual, não precisa carregar inicialmente
-            }
+
+        // Tenta carregar do cache ao iniciar ou mudar o ano
+        const cachedSessions = getCachedDataWithTTL(`f1RaceSessions_${year}`);
+        if (cachedSessions) {
+            setSessions(cachedSessions);
+            setLoadingSessions(false); // Já temos as sessões
+        } else {
+            setLoadingSessions(true); // Precisamos buscar as sessões
         }
-        return true; // Precisa carregar, ou sem dados ou ano diferente
-    });
-    // --- FIM DA MUDANÇA PRINCIPAL ---
 
-    const [error, setError] = useState(null);
-    const [flippedCardKey, setFlippedCardKey] = useState(null);
-    const [raceFastestLapsData, setRaceFastestLapsData] = useState({});
+        const cachedFastestLaps = getCachedDataWithTTL(`f1RaceFastestLaps_${year}`);
+        if (cachedFastestLaps) {
+            setRaceFastestLapsData(cachedFastestLaps);
+        } else {
+            setRaceFastestLapsData({}); // Limpa se não tiver cache para o ano
+        }
+        setLoadingFastestLaps(true); // Sempre consideramos que vamos verificar ou buscar laps
+        setError(null);
+    }, [year, currentUser]); // Roda quando o ano ou o usuário muda
 
-    const fetchBestLapData = useCallback(async (session, type) => {
+    // Função useCallback para buscar dados da melhor volta de uma sessão
+    const fetchBestLapData = useCallback(async (session) => {
+        // Tenta pegar do cache local do estado primeiro para evitar chamadas duplicadas
+        if (raceFastestLapsData[session.session_key]) {
+            return raceFastestLapsData[session.session_key];
+        }
+
         try {
+            // Busca os laps
             const laps = await fetchWithRetry(
                 `https://api.openf1.org/v1/laps?session_key=${session.session_key}&lap_duration>=0`
             );
             if (!laps || laps.length === 0) return null;
+
             let fastestLap = null;
             for (const lap of laps) {
-                if (
-                    lap.lap_duration &&
-                    (fastestLap === null || lap.lap_duration < fastestLap.lap_duration)
-                ) {
+                if (lap.lap_duration && (fastestLap === null || lap.lap_duration < fastestLap.lap_duration)) {
                     fastestLap = lap;
                 }
             }
             if (!fastestLap) return null;
+
+            // Adiciona um delay entre a busca de laps e drivers para mitigar rate limit
+            await delay(500); // Aumentado para 500ms para ser mais seguro
+
+            // Busca os dados do piloto
             const driverData = await fetchWithRetry(
                 `https://api.openf1.org/v1/drivers?driver_number=${fastestLap.driver_number}&session_key=${session.session_key}`
             );
-            const driverName =
-                driverData && driverData.length > 0
-                    ? driverData[0].broadcast_name
-                    : "Desconhecido";
-            const teamColour =
-                driverData && driverData.length > 0
-                    ? driverData[0].team_colour
-                    : "666666";
+            const driverName = driverData && driverData.length > 0 ? driverData[0].broadcast_name : "Desconhecido";
+            const teamColour = driverData && driverData.length > 0 ? driverData[0].team_colour : "666666";
+
             return {
                 session_key: session.session_key,
                 driverName: driverName,
@@ -146,90 +180,117 @@ function Races() {
             };
         } catch (innerError) {
             console.error(
-                `Error processing ${type} session ${session.session_key}:`,
+                `[Fetch Error] Error processing fastest lap for session ${session.session_key}:`,
                 innerError
             );
             return null;
         }
-    }, []);
+    }, [raceFastestLapsData]); // Adicionado raceFastestLapsData como dependência para acessar o estado atual
 
+    // Efeito para carregar as sessões de corrida da API
     useEffect(() => {
-        async function fetchRaceData() {
-            setLoading(true); // Inicia o loading ao começar a busca
+        const loadRaceSessions = async () => {
+            if (!currentUser) return; // Não faz nada se não houver usuário autenticado
+
+            setLoadingSessions(true);
             setError(null);
+
             try {
-                const fetchedSessions = await fetchWithRetry(
-                    `https://api.openf1.org/v1/sessions?year=${year}`
-                );
-                if (!fetchedSessions || fetchedSessions.length === 0) {
-                    throw new Error("No sessions found for the selected year.");
-                }
-
-                const relevantSessions = fetchedSessions.filter(
-                    (session) => session.session_type === "Race"
-                );
-
-                setSessions(relevantSessions); // Atualiza sessões aqui
-                localStorage.setItem(
-                    "f1RaceSessions",
-                    JSON.stringify(relevantSessions)
-                );
-
-                const newRaceFastestLapsData = {};
-                for (const session of relevantSessions) {
-                    const data = await fetchBestLapData(session, "Race");
-                    if (data) {
-                        newRaceFastestLapsData[data.session_key] = data;
+                // Só busca se não houver sessões já carregadas OU se o cache estiver vazio/expirado
+                if (sessions.length === 0 || !getCachedDataWithTTL(`f1RaceSessions_${year}`)) {
+                    console.log(`[Fetch] Fetching sessions for ${year} from API...`);
+                    const fetchedSessions = await fetchWithRetry(
+                        `https://api.openf1.org/v1/sessions?year=${year}`
+                    );
+                    if (!fetchedSessions || fetchedSessions.length === 0) {
+                        throw new Error("No sessions found for the selected year.");
                     }
-                    await delay(200);
+                    const raceSessions = fetchedSessions.filter(
+                        (session) => session.session_type === "Race" || session.session_type === "Sprint"
+                    ); // Inclui Sprint também
+                    setSessions(raceSessions);
+                    setCachedDataWithTTL(`f1RaceSessions_${year}`, raceSessions);
                 }
-                setRaceFastestLapsData(newRaceFastestLapsData);
-
             } catch (err) {
                 setError(err.message);
-                console.error("Error in fetchRaceData:", err);
+                console.error("[Error] Error loading sessions:", err);
+                setSessions([]); // Limpa as sessões em caso de erro
             } finally {
-                setLoading(false); // Sempre para o loading quando a busca termina (sucesso ou erro)
+                setLoadingSessions(false);
             }
+        };
+
+        // Garante que o efeito só rode se as sessões ainda não foram carregadas para o ano atual
+        // ou se o currentUser mudou e o cache está vazio.
+        if (currentUser && (sessions.length === 0 || sessions[0]?.date?.substring(0,4) !== year)) {
+             loadRaceSessions();
+        } else if (currentUser && sessions.length > 0) {
+             setLoadingSessions(false); // Já temos as sessões carregadas
         }
 
-        // Lógica de autenticação e carregamento de dados DENTRO do useEffect
-        if (!currentUser) {
-            // Se deslogado, limpa os dados e define loading como false
-            setLoading(false);
-            setSessions([]);
-            setRaceFastestLapsData({});
-            return; // Sai do useEffect para não tentar buscar dados
+    }, [year, currentUser, sessions]); // `sessions` é uma dependência para garantir que o efeito rode se o estado `sessions` estiver vazio
+
+    // Efeito para carregar os melhores tempos de volta APÓS as sessões estarem carregadas
+    useEffect(() => {
+        const loadFastestLaps = async () => {
+            if (!currentUser || sessions.length === 0) {
+                setLoadingFastestLaps(false);
+                return;
+            }
+
+            // Verifica se há alguma volta faltando para buscar, ignorando as que já estão no cache do estado
+            const missingLaps = sessions.filter(
+                session => !raceFastestLapsData[session.session_key]
+            );
+
+            if (missingLaps.length === 0) {
+                setLoadingFastestLaps(false); // Todas as voltas já estão no cache/estado
+                return;
+            }
+
+            setLoadingFastestLaps(true);
+            let tempRaceFastestLapsData = { ...raceFastestLapsData }; // Cria uma cópia para acumular os resultados
+
+            for (const session of missingLaps) { // Itera apenas sobre as sessões que faltam dados
+                console.log(`[Fetch] Fetching fastest lap for session ${session.session_key}...`);
+                const data = await fetchBestLapData(session);
+                if (data) {
+                    tempRaceFastestLapsData = {
+                        ...tempRaceFastestLapsData,
+                        [data.session_key]: data
+                    };
+                    // Atualiza o estado para que os cards mostrem o tempo assim que ele chega
+                    setRaceFastestLapsData(current => ({
+                        ...current,
+                        [data.session_key]: data
+                    }));
+                }
+                await delay(1200); // Aumentado o delay entre cada sessão para 1.2 segundos
+            }
+
+            // Salva o objeto completo de raceFastestLapsData no cache do localStorage
+            setCachedDataWithTTL(`f1RaceFastestLaps_${year}`, tempRaceFastestLapsData);
+            setLoadingFastestLaps(false);
+        };
+
+        // Garante que a busca de laps só comece depois que as sessões estiverem carregadas
+        // e se ainda houver laps para buscar (não tudo em cache)
+        if (currentUser && !loadingSessions && sessions.length > 0) {
+            loadFastestLaps();
+        } else if (currentUser && !loadingSessions && sessions.length === 0 && !error) {
+            // Se as sessões carregaram e estão vazias (e não há erro), não há laps para buscar
+            setLoadingFastestLaps(false);
         }
 
-        const storedSessions = localStorage.getItem("f1RaceSessions");
-        const parsedStoredSessions = storedSessions ? JSON.parse(storedSessions) : [];
-        const isStoredDataForCurrentYear =
-            parsedStoredSessions.length > 0 &&
-            parsedStoredSessions[0].year === parseInt(year);
+    }, [year, sessions, currentUser, loadingSessions, fetchBestLapData, raceFastestLapsData, error]); // Adicionado dependências
 
-        // Dispara a busca de dados da API SE:
-        // 1. Não há dados válidos em cache para o ano atual, OU
-        // 2. O estado 'sessions' está vazio (isso pode acontecer na montagem inicial se não houver cache válido), OU
-        // 3. O 'year' mudou no seletor e os dados no estado atual não correspondem.
-        if (!isStoredDataForCurrentYear || sessions.length === 0 || (sessions.length > 0 && sessions[0].year !== parseInt(year))) {
-            fetchRaceData();
-        }
-        // Se a condição acima for falsa, significa que os dados já estão no estado
-        // (carregados pela inicialização do useState ou já presentes de uma busca anterior),
-        // e o `loading` já foi definido como `false` pela inicialização do useState.
-        // Não precisamos fazer `setSessions` ou `setLoading(false)` novamente aqui,
-        // pois isso causaria o loop.
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [year, fetchBestLapData, currentUser]); // As dependências são importantes!
-
+    // Efeito para salvar o ano selecionado no localStorage
     useEffect(() => {
         localStorage.setItem("f1SelectedYear", JSON.stringify(year));
     }, [year]);
 
     const raceSessionsDisplay = sessions.filter(
-        (session) => session.session_type === "Race"
+        (session) => session.session_type === "Race" || session.session_type === "Sprint"
     );
 
     return (
@@ -239,7 +300,7 @@ function Races() {
                 {!currentUser ? (
                     <div className="LoginMessage Block">
                         <div>
-                            <h1 className="title">Races - F1</h1>
+                            <h1 className="title">Corridas - F1</h1>
                             <h3>Este conteúdo é restrito a Membros Registrados. Faça Login ou Registre uma conta para continuar!</h3>
                         </div>
                         <div className="buttons">
@@ -254,7 +315,7 @@ function Races() {
                 ) : (
                     <>
                         <div className="container tags">
-                            <h1 className="title">Races - F1 {year}</h1>
+                            <h1 className="title">Corridas - F1 {year}</h1>
                             <select
                                 value={year}
                                 onChange={(e) => setYear(e.target.value)}
@@ -266,18 +327,18 @@ function Races() {
                             </select>
                         </div>
 
-                        {/* Loading aparece aqui, abaixo do seletor de ano */}
-                        {loading && (
+                        {loadingSessions && !error && (
                             <>
                                 <br />
                                 <Loading />
+                                <p className="loading-message">Carregando sessões de corrida...</p>
                             </>
                         )}
 
                         {error && <p className="error">Error: {error}</p>}
 
-                        <article className="qualifying-cards-container"> {/* Mantive essa classe, mas pode ser "race-cards-container" se houver CSS específico */}
-                            {raceSessionsDisplay.length > 0 && !loading
+                        <article className="qualifying-cards-container">
+                            {!loadingSessions && raceSessionsDisplay.length > 0
                                 ? raceSessionsDisplay.map((session) => (
                                     <SessionCard
                                         key={session.session_key}
@@ -287,8 +348,12 @@ function Races() {
                                         setFlippedCardKey={setFlippedCardKey}
                                     />
                                 ))
-                                : !loading && !error && <p>Nenhuma Corrida encontrada para {year}.</p>
+                                : !loadingSessions && !error && <p>Nenhuma Corrida encontrada para {year}.</p>
                             }
+                            {/* Mensagem de carregamento dos tempos de volta, visível apenas se sessões já carregaram */}
+                            {!loadingSessions && loadingFastestLaps && sessions.length > 0 && (
+                                <p className="loading-message-small">Carregando tempos de volta mais rápidos...</p>
+                            )}
                         </article>
                     </>
                 )}
