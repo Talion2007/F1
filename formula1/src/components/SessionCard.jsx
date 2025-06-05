@@ -28,7 +28,7 @@ const SessionCard = memo(({ session, fastestLapData, flippedCardKey, setFlippedC
             <div className={`qualifying-card-inner ${isFlipped ? "is-flipped" : ""}`}>
                 {/* --- Frente do Cartão (Informações da Sessão) --- */}
                 <div className="qualifying-card-front">
-                    <p>Cidade: {session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
+                    <p>{session.location} - Circuito: {session.circuit_short_name} - <strong>{session.session_name}</strong></p>
                     <p>País: {session.country_name} - ({session.country_code}) </p>
                     <p>
                         Data: {new Date(session.date_start).toLocaleString('pt-BR', {
