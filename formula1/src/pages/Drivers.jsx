@@ -213,7 +213,7 @@ function Drivers() {
                   ))}
                 </select>
               ) : (
-                console.log(`Erro: ${erro}`)
+                console.log(`Erro: ${error}`)
               )}
             </div>
             {error && <p className="error">Error: {error}</p>}
