@@ -430,7 +430,6 @@ function Practices() {
 
                 {!showOverallLoading && !currentYearError && (
                     <article className="qualifying-cards-container">
-                        <h3>Treino Livre 1</h3>
                         {fp1SessionsDisplay.length > 0
                             ? fp1SessionsDisplay.map((session) => (
                                 <SessionCard
@@ -443,8 +442,6 @@ function Practices() {
                             ))
                             : <p>Nenhum Treino Livre 1 encontrado para {year}.</p>}
 
-                        <br />
-                        <h3>Treino Livre 2</h3>
                         {fp2SessionsDisplay.length > 0
                             ? fp2SessionsDisplay.map((session) => (
                                 <SessionCard
@@ -457,8 +454,6 @@ function Practices() {
                             ))
                             : <p>Nenhum Treino Livre 2 encontrado para {year}.</p>}
 
-                        <br />
-                        <h3>Treino Livre 3</h3>
                         {fp3SessionsDisplay.length > 0
                             ? fp3SessionsDisplay.map((session) => (
                                 <SessionCard
