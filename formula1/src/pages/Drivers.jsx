@@ -200,7 +200,6 @@ function Drivers() {
             <div className="container">
               <h1 className="title">Pilotos</h1>
               {/* Conditionally render the select only if races is an array and not empty */}
-              {Array.isArray(races) && races.length > 0 ? (
                 <select
                   value={sessionKey || ''} // Handle null sessionKey initially
                   onChange={(e) => setSessionKey(e.target.value)}
@@ -212,6 +211,7 @@ function Drivers() {
                     </option>
                   ))}
                 </select>
+                 {Array.isArray(races) && races.length > 0 ? ( ""
               ) : (
                 console.log(`Erro: ${error}`)
               )}
