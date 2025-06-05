@@ -10,7 +10,7 @@ import {
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import emailjs from 'emailjs-com';
 
@@ -63,7 +63,6 @@ export function AuthProvider({ children }) {
     console.log("Código de verificação gerado:", verificationCode);
 
     try {
-      // ATUALIZE AQUI: use import.meta.env.VITE_...
       await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_vasotur",
         import.meta.env.VITE_EMAILJS_VERIFICATION_TEMPLATE_ID || "template_yr8rrqi",
@@ -129,7 +128,6 @@ export function AuthProvider({ children }) {
         await setDoc(doc(db, 'usernames', usernameLower), dataToFirestore);
         console.log("Username saved to Firestore successfully!");
 
-        // ATUALIZE AQUI: use import.meta.env.VITE_...
         await emailjs.send(
             import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_vasotur",
             import.meta.env.VITE_EMAILJS_WELCOME_TEMPLATE_ID || "template_yr8rrqi",
@@ -167,14 +165,37 @@ export function AuthProvider({ children }) {
       throw new Error("No user is logged in to delete.");
     }
 
+    // Obtenha o displayName e UID ANTES de tentar qualquer deleção,
+    // pois 'currentUser' pode ser invalidado rapidamente após 'deleteUser'.
+    const userDisplayName = currentUser.displayName;
+    const userUid = currentUser.uid;
+
     try {
+      // --- PASSO 1: Tente deletar o documento do nome de usuário no Firestore PRIMEIRO ---
+      if (userDisplayName) {
+        const usernameLower = userDisplayName.toLowerCase();
+        const usernameDocRef = doc(db, 'usernames', usernameLower);
+        try {
+          await deleteDoc(usernameDocRef); // <-- DELETA O DOCUMENTO DO FIRESTORE AQUI
+          console.log(`Documento de username '${usernameLower}' deletado do Firestore.`);
+        } catch (firestoreError) {
+          // Loga o erro, mas NÃO LANÇA, para que a deleção da conta de autenticação possa prosseguir.
+          console.error(`Erro ao deletar nome de usuário do Firestore:`, firestoreError);
+        }
+      } else {
+        console.warn("displayName do usuário não encontrado. Não foi possível deletar o username do Firestore.");
+      }
+
+      // --- PASSO 2: Depois, delete a conta do Firebase Authentication ---
       await deleteUser(currentUser);
       localStorage.setItem("statusEmail", "deleted");
       console.log("Firebase Auth user deleted.");
+
     } catch (error) {
       if (error.code === 'auth/requires-recent-login') {
-        throw new Error("Please re-authenticate to delete your account. Log out and log back in, then try again.");
+        throw new Error("Por favor, faça login novamente para deletar sua conta. Saia e entre novamente, depois tente.");
       }
+      console.error("Erro ao deletar conta de autenticação ou dados do Firestore:", error);
       throw error;
     }
   };
