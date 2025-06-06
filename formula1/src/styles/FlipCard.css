@@ -3,6 +3,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center; /* Center cards horizontally */
+  max-width: 100%;
 }
 
 /* Base Card Styles for Qualifying */
